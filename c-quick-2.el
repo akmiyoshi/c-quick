@@ -51,7 +51,7 @@
   (interactive)
   (if (not (bolp))
       (forward-char)
-    (line-move 1)
+    (forward-line 1)
     (beginning-of-line)
     )
   )
@@ -60,7 +60,7 @@
   (interactive)
   (if (not (bolp))
       (backward-char)
-    (line-move -1)
+    (forward-line -1)
     (beginning-of-line)
     )
   )
@@ -95,7 +95,7 @@
    )
   )
 
-(defun c-quick-backward-sexp()
+(defun c-quick-backward-sexp ()
   (interactive)
   (cond
    ((looking-back "\\s(")
@@ -111,7 +111,7 @@
     )
    ((and (looking-back "\\s>")
          (save-excursion
-           (line-move -1)
+           (forward-line -1)
            (beginning-of-line)
            (looking-at "\\(\\s-*\\)\\s<")
            )
