@@ -1,8 +1,8 @@
 (global-set-key "\C-x\C-x" 'c-quick-toggle-mode)
-(global-set-key [up] 'c-quick-up-key)
+(global-set-key [down]  'c-quick-down-key)
+(global-set-key [up]    'c-quick-up-key)
 (global-set-key [right] 'c-quick-right-key)
-(global-set-key [down] 'c-quick-down-key)
-(global-set-key [left] 'c-quick-left-key)
+(global-set-key [left]  'c-quick-left-key)
 
 (defvar *c-quick-mode* nil)
 
