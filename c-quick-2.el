@@ -4,6 +4,8 @@
 (global-set-key [right] 'c-quick-right-key)
 (global-set-key [left]  'c-quick-left-key)
 
+(show-paren-mode t)
+
 (defvar *c-quick-mode* nil)
 (defvar *c-quick-ding* t)
 
