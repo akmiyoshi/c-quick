@@ -4,18 +4,24 @@
 (global-set-key [right] 'c-quick-right-key)
 (global-set-key [left]  'c-quick-left-key)
 
-(show-paren-mode t)
-
 (defvar *c-quick-mode* nil)
 (defvar *c-quick-ding* t)
+(defvar *c-quick-show-paren-style* 'expression)
 
 (defun c-quick-toggle-mode ()
   (interactive)
   (setq *c-quick-mode* (not *c-quick-mode*))
-  (if *c-quick-mode*
-      (message "c-quick-mode is ON")
+  (cond
+   (*c-quick-mode*
+    (setq show-paren-style *c-quick-show-paren-style*)
+    (show-paren-mode 1)
+    (message "c-quick-mode is ON")
+    )
+   (t
+    (show-paren-mode 0)
     (message "c-quick-mode is OFF")
     )
+   )
   )
 
 (defun c-quick-ding ()
