@@ -14,6 +14,7 @@
   (cond
    (*c-quick-mode*
     (setq show-paren-style *c-quick-show-paren-style*)
+    (setq show-paren-delay 0)
     (show-paren-mode 1)
     (message "c-quick-mode is ON")
     )
