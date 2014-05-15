@@ -9,15 +9,15 @@
 
 (defvar *c-quick-ding* t)
 
-(setq *c-quick-mode* nil)
-(setq *c-quick-in-minibuffer* nil)
+(defvar _c-quick-mode_ nil)
+(defvar _c-quick-in-minibuffer_ nil)
 
 (defun c-quick-toggle-mode ()
   (interactive)
-  (setq *c-quick-mode* (not *c-quick-mode*))
-  (c-quick-set-mode *c-quick-mode*)
+  (setq _c-quick-mode_ (not _c-quick-mode_))
+  (c-quick-set-mode _c-quick-mode_)
   (cond
-   (*c-quick-mode*
+   (_c-quick-mode_
     (message "c-quick-mode is ON"))
    (t
     (message "c-quick-mode is OFF"))))
@@ -32,23 +32,22 @@
     (show-paren-mode 0))))
 
 (defun c-quick-mode ()
-  (and (not *c-quick-in-minibuffer*) *c-quick-mode*)
-  )
+  (and (not _c-quick-in-minibuffer_) _c-quick-mode_))
 
 ;; 通常のミニバッファ
 (add-hook 'minibuffer-setup-hook '(lambda ()
                                     (c-quick-set-mode nil)
-                                    (setq *c-quick-in-minibuffer* t)))
+                                    (setq _c-quick-in-minibuffer_ t)))
 (add-hook 'minibuffer-exit-hook  '(lambda ()
-                                    (c-quick-set-mode *c-quick-mode*)
-                                    (setq *c-quick-in-minibuffer* nil)))
+                                    (c-quick-set-mode _c-quick-mode_)
+                                    (setq _c-quick-in-minibuffer_ nil)))
 ;; インクリメンタル検索
 (add-hook 'isearch-mode-hook     '(lambda ()
                                     (c-quick-set-mode nil)
-                                    (setq *c-quick-in-minibuffer* t)))
+                                    (setq _c-quick-in-minibuffer_ t)))
 (add-hook 'isearch-mode-end-hook '(lambda ()
-                                    (c-quick-set-mode *c-quick-mode*)
-                                    (setq *c-quick-in-minibuffer* nil)))
+                                    (c-quick-set-mode _c-quick-mode_)
+                                    (setq _c-quick-in-minibuffer_ nil)))
 
 (defun c-quick-ding ()
   (if *c-quick-ding* (ding)))
@@ -112,14 +111,6 @@
   (c-quick-recenter))
 
 (defun c-quick-recenter ()
-  (let ((count 0))
-    (while (and (< count 1)
-                (or (<= (point) (window-start)) (>= (point) (window-end))))
-      (setq count (1+ count))
-      (cond
-       ((<= (point) (window-start)) (recenter 0))
-       ((>= (point) (window-end))   (recenter -1))
-       )
-      )
-    )
-  )
+  (cond
+   ((<= (point) (window-start)) (recenter 0))
+   ((>= (point) (window-end))   (recenter -1))))
