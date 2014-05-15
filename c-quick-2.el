@@ -99,8 +99,8 @@
 
 (defun c-quick-recenter ()
   (cond
-   ((<= (point) (window-start)) (recenter 0))
-   ((>= (point) (window-end))   (recenter -1))))
+   ((< (point) (window-start)) (recenter 0))
+   ((> (point) (window-end))   (recenter -1))))
 
 (defun c-quick-copy-sexp ()
   (interactive)
