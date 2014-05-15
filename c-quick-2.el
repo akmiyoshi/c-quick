@@ -1,11 +1,15 @@
 ;; -*- coding: utf-8 -*-
 
+(setq scroll-conservatively 1)
+
 (global-set-key "\C-x\C-x" 'c-quick-toggle-mode)
 (global-set-key [down]  'c-quick-down-key)
 (global-set-key [up]    'c-quick-up-key)
 (global-set-key [right] 'c-quick-right-key)
 (global-set-key [left]  'c-quick-left-key)
-(setq scroll-conservatively 1)
+(global-set-key "\M-c" 'c-quick-copy-sexp)
+(global-set-key "\M-d" 'c-quick-delete-sexp)
+(global-set-key "\M-k" 'c-quick-kill-sexp)
 
 (defvar *c-quick-ding* t)
 
@@ -97,3 +101,21 @@
   (cond
    ((<= (point) (window-start)) (recenter 0))
    ((>= (point) (window-end))   (recenter -1))))
+
+(defun c-quick-copy-sexp ()
+  (interactive)
+  (let ((opoint (point)))
+    (c-quick-forward-sexp)
+    (copy-region-as-kill opoint (point))))
+
+(defun c-quick-delete-sexp ()
+  (interactive)
+  (let ((opoint (point)))
+    (c-quick-forward-sexp)
+    (delete-region opoint (point))))
+
+(defun c-quick-kill-sexp ()
+  (interactive)
+  (let ((opoint (point)))
+    (c-quick-forward-sexp)
+    (kill-region opoint (point))))
