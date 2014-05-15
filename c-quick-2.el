@@ -23,31 +23,16 @@
     (message "c-quick-mode is OFF"))))
 
 (defun c-quick-set-mode (arg)
-  (cond
-   (arg
+  (if (not arg)
+      (show-paren-mode 0)
     (setq show-paren-style 'expression)
     (setq show-paren-delay 0)
-    (show-paren-mode 1))
-   (t
-    (show-paren-mode 0))))
+    (show-paren-mode 1)))
 
 (defun c-quick-mode ()
-  (and (not _c-quick-in-minibuffer_) _c-quick-mode_))
-
-;; 通常のミニバッファ
-(add-hook 'minibuffer-setup-hook '(lambda ()
-                                    (c-quick-set-mode nil)
-                                    (setq _c-quick-in-minibuffer_ t)))
-(add-hook 'minibuffer-exit-hook  '(lambda ()
-                                    (c-quick-set-mode _c-quick-mode_)
-                                    (setq _c-quick-in-minibuffer_ nil)))
-;; インクリメンタル検索
-(add-hook 'isearch-mode-hook     '(lambda ()
-                                    (c-quick-set-mode nil)
-                                    (setq _c-quick-in-minibuffer_ t)))
-(add-hook 'isearch-mode-end-hook '(lambda ()
-                                    (c-quick-set-mode _c-quick-mode_)
-                                    (setq _c-quick-in-minibuffer_ nil)))
+  (and 
+   (not (window-minibuffer-p (selected-window)))
+   _c-quick-mode_))
 
 (defun c-quick-ding ()
   (if *c-quick-ding* (ding)))
@@ -72,15 +57,13 @@
   (if (not (bolp))
       (forward-char)
     (if (eobp) (c-quick-ding) (forward-line 1)))
-  (c-quick-recenter)
-  )
+  (c-quick-recenter))
 
 (defun c-quick-previous-line ()
   (if (not (bolp))
       (backward-char)
     (if (bobp) (c-quick-ding) (forward-line -1)))
-  (c-quick-recenter)
-  )
+  (c-quick-recenter))
 
 (defun c-quick-forward-sexp ()
   (cond
