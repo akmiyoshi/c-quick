@@ -5,9 +5,11 @@
 (global-set-key [up]    'c-quick-up-key)
 (global-set-key [right] 'c-quick-right-key)
 (global-set-key [left]  'c-quick-left-key)
+(setq scroll-conservatively 1)
 
-(defvar *c-quick-mode* nil)
 (defvar *c-quick-ding* t)
+
+(setq *c-quick-mode* nil)
 (setq *c-quick-in-minibuffer* nil)
 
 (defun c-quick-toggle-mode ()
@@ -70,12 +72,16 @@
 (defun c-quick-next-line ()
   (if (not (bolp))
       (forward-char)
-    (if (eobp) (c-quick-ding) (forward-line 1))))
+    (if (eobp) (c-quick-ding) (forward-line 1)))
+  (c-quick-recenter)
+  )
 
 (defun c-quick-previous-line ()
   (if (not (bolp))
       (backward-char)
-    (if (bobp) (c-quick-ding) (forward-line -1))))
+    (if (bobp) (c-quick-ding) (forward-line -1)))
+  (c-quick-recenter)
+  )
 
 (defun c-quick-forward-sexp ()
   (cond
@@ -86,7 +92,8 @@
     (while (looking-at "\\s-*\\s<") (forward-line)))
    ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
    ((looking-at "\n") (forward-char))
-   (t (ignore-errors (forward-sexp)))))
+   (t (ignore-errors (forward-sexp))))
+  (c-quick-recenter))
 
 (defun c-quick-backward-sexp ()
   (cond
@@ -101,4 +108,18 @@
    ((looking-back "\\s-") (while (looking-back "\\s-") (backward-char)))
    ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
    ((looking-back "\n") (backward-char))
-   (t (ignore-errors (backward-sexp)))))
+   (t (ignore-errors (backward-sexp))))
+  (c-quick-recenter))
+
+(defun c-quick-recenter ()
+  (let ((count 0))
+    (while (and (< count 1)
+                (or (<= (point) (window-start)) (>= (point) (window-end))))
+      (setq count (1+ count))
+      (cond
+       ((<= (point) (window-start)) (recenter 0))
+       ((>= (point) (window-end))   (recenter -1))
+       )
+      )
+    )
+  )
