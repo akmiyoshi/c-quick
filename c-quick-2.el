@@ -77,7 +77,10 @@
     (while (looking-at "\\s-*\\s<") (forward-line)))
    ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
    ((looking-at "\n") (forward-char))
-   (t (ignore-errors (forward-sexp))))
+   (t
+    (let ((opoint (point)))
+      (ignore-errors (forward-sexp))
+      (c-quick-count-lines opoint (point)))))
   (c-quick-recenter))
 
 (defun c-quick-backward-sexp ()
@@ -93,8 +96,15 @@
    ((looking-back "\\s-") (while (looking-back "\\s-") (backward-char)))
    ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
    ((looking-back "\n") (backward-char))
-   (t (ignore-errors (backward-sexp))))
+   (t
+    (let ((opoint (point)))
+      (ignore-errors (backward-sexp))
+      (c-quick-count-lines opoint (point)))))
   (c-quick-recenter))
+
+(defun c-quick-count-lines (start end)
+  (let ((lines (count-lines start end)))
+    (if (= lines 1) (message "1 line.") (message "%s lines." lines))))
 
 (defun c-quick-recenter ()
   (cond
