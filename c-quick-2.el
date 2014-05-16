@@ -61,12 +61,14 @@
 (defun c-quick-next-line ()
   (if (not (bolp))
       (forward-char)
-    (if (eobp) (c-quick-ding) (forward-line 1))))
+    (if (eobp) (c-quick-ding) (forward-line 1)))
+  (c-quick-on-bolp))
 
 (defun c-quick-previous-line ()
   (if (not (bolp))
       (backward-char)
-    (if (bobp) (c-quick-ding) (forward-line -1))))
+    (if (bobp) (c-quick-ding) (forward-line -1)))
+  (c-quick-on-bolp))
 
 (defun c-quick-forward-sexp ()
   (cond
@@ -81,7 +83,8 @@
     (let ((opoint (point)))
       (ignore-errors (forward-sexp))
       (c-quick-count-lines opoint (point)))))
-  (c-quick-recenter))
+  (c-quick-recenter)
+  (c-quick-on-bolp))
 
 (defun c-quick-backward-sexp ()
   (cond
@@ -100,7 +103,16 @@
     (let ((opoint (point)))
       (ignore-errors (backward-sexp))
       (c-quick-count-lines opoint (point)))))
-  (c-quick-recenter))
+  (c-quick-recenter)
+  (c-quick-on-bolp))
+
+(defun c-quick-on-bolp ()
+  (when (and (bolp) (looking-at "\\(\\s-*\\)[\\s(`,\"]"))
+    (save-excursion
+      (goto-char (match-end 1))
+      (let ((opoint (point)))
+        (ignore-errors (forward-sexp))
+        (c-quick-count-lines opoint (point))))))
 
 (defun c-quick-count-lines (start end)
   (let ((lines (count-lines start end)))
