@@ -60,14 +60,12 @@
 (defun c-quick-next-line ()
   (if (not (bolp))
       (forward-char)
-    (if (eobp) (c-quick-ding) (forward-line 1)))
-  (c-quick-recenter))
+    (if (eobp) (c-quick-ding) (forward-line 1))))
 
 (defun c-quick-previous-line ()
   (if (not (bolp))
       (backward-char)
-    (if (bobp) (c-quick-ding) (forward-line -1)))
-  (c-quick-recenter))
+    (if (bobp) (c-quick-ding) (forward-line -1))))
 
 (defun c-quick-forward-sexp ()
   (cond
