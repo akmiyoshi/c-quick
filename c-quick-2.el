@@ -2,13 +2,14 @@
 
 (setq scroll-conservatively 1)
 
-(global-set-key "\C-x\C-x" 'c-quick-toggle-mode)
 (global-set-key [down]  'c-quick-down-key)
 (global-set-key [up]    'c-quick-up-key)
 (global-set-key [right] 'c-quick-right-key)
 (global-set-key [left]  'c-quick-left-key)
+(global-set-key "\M-q" 'c-quick-toggle-mode)
 (global-set-key "\M-c" 'c-quick-copy-sexp)
 (global-set-key "\M-d" 'c-quick-delete-sexp)
+(global-set-key "\M-i" 'c-quick-indent-sexp)
 (global-set-key "\M-k" 'c-quick-kill-sexp)
 
 (defvar *c-quick-ding* t)
@@ -104,13 +105,19 @@
   (interactive)
   (let ((opoint (point)))
     (c-quick-forward-sexp)
-    (copy-region-as-kill opoint (point))))
+    (kill-ring-save opoint (point))))
 
 (defun c-quick-delete-sexp ()
   (interactive)
   (let ((opoint (point)))
     (c-quick-forward-sexp)
     (delete-region opoint (point))))
+
+(defun c-quick-indent-sexp ()
+  (interactive)
+  (let ((opoint (point)))
+    (c-quick-forward-sexp)
+    (indent-region opoint (point))))
 
 (defun c-quick-kill-sexp ()
   (interactive)
