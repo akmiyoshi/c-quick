@@ -107,8 +107,9 @@
   (c-quick-on-bolp))
 
 (defun c-quick-on-bolp ()
-  (when (and (bolp) (looking-at "\\(\\s-*\\)[\\s(`,\"]"))
-    (save-excursion
+  (save-excursion
+    (while (looking-back "\\s-") (backward-char))
+    (when (and (bolp) (looking-at "\\(\\s-*\\)[a-zA-Z$&*+-_<>(\\['`,\"]"))
       (goto-char (match-end 1))
       (let ((opoint (point)))
         (ignore-errors (forward-sexp))
