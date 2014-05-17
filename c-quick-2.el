@@ -118,12 +118,15 @@
 (defun c-quick-show-info ()
   (save-excursion
     (cond
-     ((looking-at "\\(\\s-*\\)[a-zA-Z$&*+-_<>(\\['`,#\"]")
+     (
+      ;; 34.2.1 構文クラス一覧
+      ;; http://www.geocities.co.jp/SiliconValley-Bay/9285/ELISP-JA/elisp_565.html
+      (looking-at "\\(\\s-*\\)\\(\\sw\\|\\s_\\|\\s(\\|\\s<\\|\\s\"\\|\\s'\\)")
       (goto-char (match-end 1))
       (let ((opoint (point)))
         (c-quick-forward-sexp)
         (c-quick-count-lines opoint (point))))
-     ((looking-back "\\s)")
+     ((looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
       (let ((opoint (point)))
         (c-quick-backward-sexp)
         (c-quick-count-lines opoint (point)))))))
