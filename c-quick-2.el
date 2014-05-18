@@ -150,7 +150,7 @@
    ((< (point) (window-start)) (recenter 0))
    ((> (point) (window-end))   (recenter -1))))
 
-(defun c-quick-operate-on-sexp (op)
+(defun c-quick-operate-on-region-or-sexp (op)
   (interactive)
   (cond
    ((not transient-mark-mode)
@@ -162,22 +162,22 @@
 
 (defun c-quick-copy-region ()
   (interactive)
-  (c-quick-operate-on-sexp
+  (c-quick-operate-on-region-or-sexp
    (lambda (beg end)
      (kill-ring-save beg end)
      (setq this-command 'kill-region))))
 
 (defun c-quick-delete-region ()
   (interactive)
-  (c-quick-operate-on-sexp #'delete-region))
+  (c-quick-operate-on-region-or-sexp #'delete-region))
 
 (defun c-quick-indent-region ()
   (interactive)
-  (c-quick-operate-on-sexp #'indent-region))
+  (c-quick-operate-on-region-or-sexp #'indent-region))
 
 (defun c-quick-kill-region ()
   (interactive)
-  (c-quick-operate-on-sexp #'kill-region))
+  (c-quick-operate-on-region-or-sexp #'kill-region))
 
 (defun c-quick-mark-sexp ()
   (interactive)
