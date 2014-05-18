@@ -4,17 +4,17 @@
 
 (setq scroll-conservatively 1)
 
-(global-set-key [down]  'c-quick-down-key)
-(global-set-key [up]    'c-quick-up-key)
-(global-set-key [right] 'c-quick-right-key)
-(global-set-key [left]  'c-quick-left-key)
-(global-set-key "\C-x\C-x" 'c-quick-toggle-mode)
-(global-set-key "\M-c" 'c-quick-copy-sexp)
-(global-set-key [M-delete] 'c-quick-delete-sexp)
-(define-key esc-map [delete] 'c-quick-delete-sexp)
-(global-set-key "\M-i" 'c-quick-indent-sexp)
-(global-set-key "\M-k" 'c-quick-kill-sexp)
-(global-set-key "\M-m" 'c-quick-mark-sexp)
+(global-set-key (kbd "<down>")     'c-quick-down-key)
+(global-set-key (kbd "<up>")       'c-quick-up-key)
+(global-set-key (kbd "<right>")    'c-quick-right-key)
+(global-set-key (kbd "<left>")     'c-quick-left-key)
+(global-set-key (kbd "C-z")        'c-quick-toggle-mode)
+(global-set-key (kbd "M-w")        'c-quick-copy-region)
+(global-set-key (kbd "C-w")        'c-quick-kill-region)
+(global-set-key (kbd "C-M-\\")     'c-quick-indent-region)
+(global-set-key (kbd "<M-delete>") 'c-quick-delete-region)
+(define-key esc-map [delete]       'c-quick-delete-region)
+(global-set-key (kbd "C-M-SPC")    'c-quick-mark-sexp)
 
 (defvar *c-quick-ding* t)
 
@@ -150,29 +150,34 @@
    ((< (point) (window-start)) (recenter 0))
    ((> (point) (window-end))   (recenter -1))))
 
-(defun c-quick-copy-sexp ()
+(defun c-quick-operate-on-sexp (op)
   (interactive)
-  (let ((opoint (point)))
-    (c-quick-forward-sexp)
-    (kill-ring-save opoint (point))))
+  (cond
+   ((not transient-mark-mode)
+    (error "transient-mark-mode should not be nil."))
+   (t
+    (funcall op
+     (point)
+     (if (region-active-p) (mark) (c-quick-forward-sexp) (point))))))
 
-(defun c-quick-delete-sexp ()
+(defun c-quick-copy-region ()
   (interactive)
-  (let ((opoint (point)))
-    (c-quick-forward-sexp)
-    (delete-region opoint (point))))
+  (c-quick-operate-on-sexp
+   (lambda (beg end)
+     (kill-ring-save beg end)
+     (setq this-command 'kill-region))))
 
-(defun c-quick-indent-sexp ()
+(defun c-quick-delete-region ()
   (interactive)
-  (let ((opoint (point)))
-    (c-quick-forward-sexp)
-    (indent-region opoint (point))))
+  (c-quick-operate-on-sexp #'delete-region))
 
-(defun c-quick-kill-sexp ()
+(defun c-quick-indent-region ()
   (interactive)
-  (let ((opoint (point)))
-    (c-quick-forward-sexp)
-    (kill-region opoint (point))))
+  (c-quick-operate-on-sexp #'indent-region))
+
+(defun c-quick-kill-region ()
+  (interactive)
+  (c-quick-operate-on-sexp #'kill-region))
 
 (defun c-quick-mark-sexp ()
   (interactive)
