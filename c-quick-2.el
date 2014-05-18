@@ -45,8 +45,8 @@
 (defun c-quick-ding ()
   (if *c-quick-ding* (ding)))
 
-(defun c-quick-redisplay ()
-  (c-quick-recenter)
+(defun c-quick-redisplay (dir)
+  (c-quick-recenter dir)
   (c-quick-show-info))
 
 (defun c-quick-down-key ()
@@ -54,28 +54,28 @@
   (if (not (c-quick-mode))
       (next-line)
     (c-quick-next-line))
-  (c-quick-redisplay))
+  (c-quick-redisplay 'down))
 
 (defun c-quick-up-key ()
   (interactive)
   (if (not (c-quick-mode))
       (previous-line)
     (c-quick-previous-line))
-  (c-quick-redisplay))
+  (c-quick-redisplay 'up))
 
 (defun c-quick-right-key ()
   (interactive)
   (if (not (c-quick-mode))
       (forward-char)
     (c-quick-forward-sexp))
-  (c-quick-redisplay))
+  (c-quick-redisplay 'down))
 
 (defun c-quick-left-key ()
   (interactive)
   (if (not (c-quick-mode))
       (backward-char)
     (c-quick-backward-sexp))
-  (c-quick-redisplay))
+  (c-quick-redisplay 'up))
 
 (defun c-quick-next-line ()
   (if (not (bolp))
@@ -154,10 +154,16 @@
           (backward-char)
           (point))))))
 
-(defun c-quick-recenter ()
+(defun c-quick-recenter (dir)
+  (assert dir)
   (cond
-   ((< (point) (window-start)) (recenter 0))
-   ((> (point) (c-quick-window-end)) (recenter -1))))
+   ((eq dir 'up) (when (< (point) (window-start)) (recenter 0)))
+   ((eq dir 'down) (when (> (point) (c-quick-window-end)) (recenter -1)))
+   (t
+    ;; to be deleted.
+    (cond
+     ((< (point) (window-start)) (recenter 0))
+     ((> (point) (c-quick-window-end)) (recenter -1))))))
 
 (defun c-quick-operate-on-region-or-sexp (op)
   (interactive)
