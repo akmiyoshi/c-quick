@@ -6,7 +6,6 @@
 (global-set-key [up]    'c-quick-up-key)
 (global-set-key [right] 'c-quick-right-key)
 (global-set-key [left]  'c-quick-left-key)
-;; (global-set-key "\M-q" 'c-quick-toggle-mode)
 (global-set-key "\C-x\C-x" 'c-quick-toggle-mode)
 (global-set-key "\M-c" 'c-quick-copy-sexp)
 (global-set-key "\M-d" 'c-quick-delete-sexp)
