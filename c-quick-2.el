@@ -1,13 +1,25 @@
 ;; -*- coding: utf-8 -*-
+;;; c-quick-2.el --- Intelligent Cursor Movement for GNU Emacs
 ;;
-;; 34.2.1 構文クラス一覧
-;; http://www.geocities.co.jp/SiliconValley-Bay/9285/ELISP-JA/elisp_565.html
+;; Copyright (C) 1993-2014  akmiyoshi
 ;;
-;; 3.1 Integer Basics
-;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Integer-Basics.html
+;; Author: akmiyoshi
+;; URL: https://github.com/akmiyoshi/c-quick/
+;; Keywords: lisp, scheme, clojure
+;; Version: 0.9.1
 ;;
-;; 28.19 The Window Start and End Positions
-;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Window-Start-and-End.html
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (global-set-key (kbd "<down>")     'c-quick-down-key)
 (global-set-key (kbd "<up>")       'c-quick-up-key)
@@ -28,7 +40,7 @@
   :group 'c-quick
   :prefix "c-quick-")
 
-(defcustom c-quick-ding-is-ok t ""
+(defcustom c-quick-ding-dings t ""
   :group 'c-quick
   :type  'boolean)
 
@@ -64,7 +76,7 @@
    _c-quick-mode_))
 
 (defun c-quick-ding ()
-  (if c-quick-ding-is-ok (ding)))
+  (if c-quick-ding-dings (ding)))
 
 (defun c-quick-redisplay (dir)
   (c-quick-recenter dir)
@@ -74,16 +86,16 @@
 (defun c-quick-down-key ()
   (interactive)
   (if (c-quick-mode)
-      (c-quick-next-line)
-    (next-line)
+      (c-quick-slide-down)
+    (c-quick-next-line)
     )
   (c-quick-redisplay 'down))
 
 (defun c-quick-up-key ()
   (interactive)
   (if (c-quick-mode)
-      (c-quick-previous-line)
-    (previous-line)
+      (c-quick-slide-up)
+    (c-quick-previous-line)
     )
   (c-quick-redisplay 'up))
 
@@ -91,25 +103,45 @@
   (interactive)
   (if (c-quick-mode)
       (c-quick-forward-sexp)
-    (forward-char))
+    (c-quick-forward-char))
   (c-quick-redisplay 'down))
 
 (defun c-quick-left-key ()
   (interactive)
   (if (c-quick-mode)
       (c-quick-backward-sexp)
-    (backward-char))
+    (c-quick-backward-char))
   (c-quick-redisplay 'up))
 
-(defun c-quick-next-line ()
+(defun c-quick-slide-down ()
   (if (not (bolp))
       (forward-char)
     (if (eobp) (c-quick-ding) (forward-line 1))))
 
-(defun c-quick-previous-line ()
+(defun c-quick-slide-up ()
   (if (not (bolp))
       (backward-char)
     (if (bobp) (c-quick-ding) (forward-line -1))))
+
+(defun c-quick-forward-char ()
+  (if (eobp)
+      (c-quick-ding)
+    (forward-char)))
+
+(defun c-quick-backward-char ()
+  (if (bobp)
+      (c-quick-ding)
+    (backward-char)))
+
+(defun c-quick-next-line ()
+  (if (save-excursion (end-of-line) (eobp))
+      (c-quick-ding)
+    (next-line)))
+
+(defun c-quick-previous-line ()
+  (if (save-excursion (beginning-of-line) (bobp))
+      (c-quick-ding)
+    (previous-line)))
 
 (defun c-quick-forward-sexp ()
   (cond
@@ -221,3 +253,14 @@
 
 (provide 'c-quick-2)
 ;;; c-quick-2.el ends here
+
+;; [参考文献]
+;;
+;; 34.2.1 構文クラス一覧
+;; http://www.geocities.co.jp/SiliconValley-Bay/9285/ELISP-JA/elisp_565.html
+;;
+;; 3.1 Integer Basics
+;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Integer-Basics.html
+;;
+;; 28.19 The Window Start and End Positions
+;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Window-Start-and-End.html
