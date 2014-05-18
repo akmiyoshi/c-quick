@@ -5,6 +5,9 @@
 ;;
 ;; 3.1 Integer Basics
 ;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Integer-Basics.html
+;;
+;; 28.19 The Window Start and End Positions
+;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Window-Start-and-End.html
 
 (global-set-key (kbd "<down>")     'c-quick-down-key)
 (global-set-key (kbd "<up>")       'c-quick-up-key)
@@ -140,19 +143,27 @@
   (let ((lines (count-lines start end)))
     (if (= lines 1) (message "1 line.") (message "%s lines." lines))))
 
+;; (defun c-quick-window-end ()
+;;   (let ((left (save-excursion
+;;                 (goto-char (window-start))
+;;                 (forward-line (- (window-height) 1)))))
+;;     (if (> left 2)
+;;         most-positive-fixnum
+;;       (let ((opoint (point))
+;;             (wend (window-end nil t)))
+;;         (save-excursion
+;;           (goto-char wend)
+;;           (forward-line -1)
+;;           (backward-char)
+;;           (point))))))
+
 (defun c-quick-window-end ()
-  (let ((left (save-excursion
-                (goto-char (window-start))
-                (forward-line (- (window-height) 1)))))
-    (if (> left 2)
-        most-positive-fixnum
-      (let ((opoint (point))
-            (wend (window-end nil t)))
-        (save-excursion
-          (goto-char wend)
-          (forward-line -1)
-          (backward-char)
-          (point))))))
+  (let ((wend (window-end nil t)))
+    (save-excursion
+      (goto-char wend)
+      (forward-line -1)
+      (backward-char)
+      (point))))
 
 (defun c-quick-recenter (dir)
   (assert dir)
