@@ -146,22 +146,7 @@
   (let ((lines (count-lines start end)))
     (if (= lines 1) (message "1 line.") (message "%s lines." lines))))
 
-;; (defun c-quick-window-end ()
-;;   (let ((left (save-excursion
-;;                 (goto-char (window-start))
-;;                 (forward-line (- (window-height) 1)))))
-;;     (if (> left 2)
-;;         most-positive-fixnum
-;;       (let ((opoint (point))
-;;             (wend (window-end nil t)))
-;;         (save-excursion
-;;           (goto-char wend)
-;;           (forward-line -1)
-;;           (backward-char)
-;;           (point))))))
-
 (defun c-quick-window-end ()
-  ;; (let ((wend (window-end nil t)))
   (let ((wend (window-end)))
     (save-excursion
       (goto-char wend)
@@ -170,7 +155,7 @@
       (point))))
 
 (defun c-quick-recenter (dir)
-  (assert dir)
+  ;; (assert dir)
   (cond
    ((pos-visible-in-window-p (point)) nil)
    ((eq dir 'up) (when (< (point) (window-start)) (recenter 0)))
