@@ -19,7 +19,6 @@
 (defvar *c-quick-ding* t)
 
 (defvar _c-quick-mode_ nil)
-(defvar _c-quick-in-minibuffer_ nil)
 
 (defun c-quick-toggle-mode ()
   (interactive)
