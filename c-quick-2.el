@@ -21,9 +21,26 @@
 (global-set-key (kbd "C-M-SPC")    'c-quick-mark-sexp)
 (global-set-key (kbd "C-M-@")      'c-quick-mark-sexp)
 
-(defvar *c-quick-ding* t)
+;;;; Customization
+
+(defgroup c-quick nil
+  "c-quick."
+  :group 'c-quick
+  :prefix "c-quick-")
+
+(defcustom c-quick-ding-is-ok t ""
+  :group 'c-quick
+  :type  'boolean)
+
+(defcustom c-quick-paren-only nil ""
+  :group 'c-quick
+  :type  'boolean)
+
+;;;; Internal Variables
 
 (defvar _c-quick-mode_ nil)
+
+;;;; Functions
 
 (defun c-quick-toggle-mode ()
   (interactive)
@@ -36,7 +53,8 @@
 (defun c-quick-set-mode (arg)
   (if (not arg)
       (show-paren-mode 0)
-    (setq show-paren-style 'expression)
+    (setq show-paren-style
+          (if c-quick-paren-only 'parenthesis 'expression))
     (setq show-paren-delay 0)
     (show-paren-mode 1)))
 
@@ -46,7 +64,7 @@
    _c-quick-mode_))
 
 (defun c-quick-ding ()
-  (if *c-quick-ding* (ding)))
+  (if c-quick-ding-is-ok (ding)))
 
 (defun c-quick-redisplay (dir)
   (c-quick-recenter dir)
