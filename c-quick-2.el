@@ -10,7 +10,8 @@
 (global-set-key [left]  'c-quick-left-key)
 (global-set-key "\C-x\C-x" 'c-quick-toggle-mode)
 (global-set-key "\M-c" 'c-quick-copy-sexp)
-(global-set-key "\M-d" 'c-quick-delete-sexp)
+;(global-set-key "\M-d" 'c-quick-delete-sexp)
+(global-set-key "\M-e" 'c-quick-delete-sexp)
 (global-set-key "\M-i" 'c-quick-indent-sexp)
 (global-set-key "\M-k" 'c-quick-kill-sexp)
 
@@ -92,7 +93,13 @@
     (forward-line)
     (while (looking-at "\\s-*\\s<") (forward-line)))
    ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
-   ((looking-at "\n") (forward-char))
+   ;; ((looking-at "\n") (forward-char))
+   ((looking-at "\n")
+    (let ((bol? (bolp)))
+      (forward-char)
+      (when bol?
+        (while (and (bolp) (looking-at "\n"))
+          (forward-char)))))
    (t
     (let ((opoint (point)))
       (ignore-errors (forward-sexp))
@@ -110,7 +117,11 @@
       (goto-char (match-beginning 0))))
    ((looking-back "\\s-") (while (looking-back "\\s-") (backward-char)))
    ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
-   ((looking-back "\n") (backward-char))
+   ;; ((looking-back "\n") (backward-char))
+   ((looking-back "\n")
+    (backward-char)
+    (while (and (bolp) (looking-back "\n") (save-excursion (backward-char) (bolp)))
+      (backward-char)))
    (t
     (let ((opoint (point)))
       (ignore-errors (backward-sexp))
@@ -127,8 +138,7 @@
       (goto-char (match-end 1))
       (let ((opoint (point)))
         (c-quick-forward-sexp)
-        (c-quick-count-lines opoint (point))))
-     )))
+        (c-quick-count-lines opoint (point)))))))
 
 (defun c-quick-count-lines (start end)
   (let ((lines (count-lines start end)))
