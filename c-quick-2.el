@@ -95,7 +95,6 @@
     (forward-line)
     (while (looking-at "\\s-*\\s<") (forward-line)))
    ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
-   ;; ((looking-at "\n") (forward-char))
    ((looking-at "\n")
     (let ((bol? (bolp)))
       (forward-char)
@@ -116,7 +115,6 @@
       (goto-char (match-beginning 0))))
    ((looking-back "\\s-") (while (looking-back "\\s-") (backward-char)))
    ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
-   ;; ((looking-back "\n") (backward-char))
    ((looking-back "\n")
     (backward-char)
     (while (and (bolp) (looking-back "\n")
@@ -157,7 +155,6 @@
           (point))))))
 
 (defun c-quick-recenter ()
-  ;;(message "%s %s %s" (point) (window-start) (c-quick-window-end))
   (cond
    ((< (point) (window-start)) (recenter 0))
    ((> (point) (c-quick-window-end)) (recenter -1))))
