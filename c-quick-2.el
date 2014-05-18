@@ -15,6 +15,7 @@
 (global-set-key (kbd "<M-delete>") 'c-quick-delete-region)
 (define-key esc-map [delete]       'c-quick-delete-region)
 (global-set-key (kbd "C-M-SPC")    'c-quick-mark-sexp)
+(global-set-key (kbd "C-M-@")      'c-quick-mark-sexp)
 
 (defvar *c-quick-ding* t)
 
@@ -187,3 +188,6 @@
     (let ((opoint (point)))
       (set-mark (point))
       (c-quick-forward-sexp))))
+
+(provide 'c-quick-2)
+;;; c-quick-2.el ends here
