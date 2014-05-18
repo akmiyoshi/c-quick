@@ -1,7 +1,10 @@
 ;; -*- coding: utf-8 -*-
+;;
 ;; 34.2.1 構文クラス一覧
 ;; http://www.geocities.co.jp/SiliconValley-Bay/9285/ELISP-JA/elisp_565.html
-
+;;
+;; 3.1 Integer Basics
+;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Integer-Basics.html
 ;; (setq scroll-conservatively 1)
 
 (global-set-key (kbd "<down>")     'c-quick-down-key)
@@ -45,15 +48,17 @@
 (defun c-quick-ding ()
   (if *c-quick-ding* (ding)))
 
+(defun c-quick-redisplay ()
+  (c-quick-recenter)
+  (c-quick-show-info))
+
 (defun c-quick-down-key ()
   (interactive)
   (if (not (c-quick-mode))
       (next-line)
     (c-quick-next-line)
     (c-quick-show-info))
-  (c-quick-recenter)
-  (c-quick-show-info)
-  )
+  (c-quick-redisplay))
 
 (defun c-quick-up-key ()
   (interactive)
@@ -61,24 +66,21 @@
       (previous-line)
     (c-quick-previous-line)
     (c-quick-show-info))
-  (c-quick-recenter)
-  (c-quick-show-info))
+  (c-quick-redisplay))
 
 (defun c-quick-right-key ()
   (interactive)
   (if (not (c-quick-mode))
       (forward-char)
-    (c-quick-forward-sexp)
-    (c-quick-recenter)
-    (c-quick-show-info)))
+    (c-quick-forward-sexp))
+  (c-quick-redisplay))
 
 (defun c-quick-left-key ()
   (interactive)
   (if (not (c-quick-mode))
       (backward-char)
-    (c-quick-backward-sexp)
-    (c-quick-recenter)
-    (c-quick-show-info)))
+    (c-quick-backward-sexp))
+  (c-quick-redisplay))
 
 (defun c-quick-next-line ()
   (if (not (bolp))
