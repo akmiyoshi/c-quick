@@ -39,7 +39,7 @@
     (show-paren-mode 1)))
 
 (defun c-quick-mode ()
-  (and 
+  (and
    (not (window-minibuffer-p (selected-window)))
    _c-quick-mode_))
 
@@ -121,7 +121,8 @@
    ;; ((looking-back "\n") (backward-char))
    ((looking-back "\n")
     (backward-char)
-    (while (and (bolp) (looking-back "\n") (save-excursion (backward-char) (bolp)))
+    (while (and (bolp) (looking-back "\n")
+                (save-excursion (backward-char) (bolp)))
       (backward-char)))
    (t
     (let ((opoint (point)))
