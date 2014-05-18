@@ -27,10 +27,8 @@
   (setq _c-quick-mode_ (not _c-quick-mode_))
   (c-quick-set-mode _c-quick-mode_)
   (cond
-   (_c-quick-mode_
-    (message "c-quick-mode is ON"))
-   (t
-    (message "c-quick-mode is OFF"))))
+   (_c-quick-mode_ (message "c-quick-mode is ON"))
+   (t (message "c-quick-mode is OFF"))))
 
 (defun c-quick-set-mode (arg)
   (if (not arg)
@@ -55,16 +53,14 @@
   (interactive)
   (if (not (c-quick-mode))
       (next-line)
-    (c-quick-next-line)
-    (c-quick-show-info))
+    (c-quick-next-line))
   (c-quick-redisplay))
 
 (defun c-quick-up-key ()
   (interactive)
   (if (not (c-quick-mode))
       (previous-line)
-    (c-quick-previous-line)
-    (c-quick-show-info))
+    (c-quick-previous-line))
   (c-quick-redisplay))
 
 (defun c-quick-right-key ()
@@ -106,10 +102,7 @@
       (when bol?
         (while (and (bolp) (looking-at "\n"))
           (forward-char)))))
-   (t
-    (let ((opoint (point)))
-      (ignore-errors (forward-sexp))
-      (c-quick-count-lines opoint (point))))))
+   (t (ignore-errors (forward-sexp)))))
 
 (defun c-quick-backward-sexp ()
   (cond
@@ -129,23 +122,21 @@
     (while (and (bolp) (looking-back "\n")
                 (save-excursion (backward-char) (bolp)))
       (backward-char)))
-   (t
-    (let ((opoint (point)))
-      (ignore-errors (backward-sexp))
-      (c-quick-count-lines opoint (point))))))
+   (t (ignore-errors (backward-sexp)))))
 
 (defun c-quick-show-info ()
-  (save-excursion
-    (cond
-     ((looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
-      (let ((opoint (point)))
-        (c-quick-backward-sexp)
-        (c-quick-count-lines opoint (point))))
-     ((looking-at "\\(\\s-*\\)\\(\\sw\\|\\s_\\|\\s(\\|\\s<\\|\\s\"\\|\\s'\\)")
-      (goto-char (match-end 1))
-      (let ((opoint (point)))
-        (c-quick-forward-sexp)
-        (c-quick-count-lines opoint (point)))))))
+  (when (c-quick-mode)
+    (save-excursion
+      (cond
+       ((looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
+        (let ((opoint (point)))
+          (c-quick-backward-sexp)
+          (c-quick-count-lines opoint (point))))
+       ((looking-at "\\(\\s-*\\)\\(\\sw\\|\\s_\\|\\s(\\|\\s<\\|\\s\"\\|\\s'\\)")
+        (goto-char (match-end 1))
+        (let ((opoint (point)))
+          (c-quick-forward-sexp)
+          (c-quick-count-lines opoint (point))))))))
 
 (defun c-quick-count-lines (start end)
   (let ((lines (count-lines start end)))
@@ -154,8 +145,7 @@
 (defun c-quick-window-end ()
   (let ((left (save-excursion
                 (goto-char (window-start))
-                (forward-line (- (window-height) 2))
-                )))
+                (forward-line (- (window-height) 2)))))
     (if (> left 0)
         most-positive-fixnum
       (let ((opoint (point))
@@ -170,12 +160,7 @@
   ;;(message "%s %s %s" (point) (window-start) (c-quick-window-end))
   (cond
    ((< (point) (window-start)) (recenter 0))
-   ((> (point) (c-quick-window-end)) (recenter -1))
-   ))
-
-(defun c-quick-redisplay ()
-  (c-quick-recenter)
-  )
+   ((> (point) (c-quick-window-end)) (recenter -1))))
 
 (defun c-quick-operate-on-region-or-sexp (op)
   (interactive)
