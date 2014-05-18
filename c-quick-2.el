@@ -2,7 +2,7 @@
 ;; 34.2.1 構文クラス一覧
 ;; http://www.geocities.co.jp/SiliconValley-Bay/9285/ELISP-JA/elisp_565.html
 
-(setq scroll-conservatively 1)
+;; (setq scroll-conservatively 1)
 
 (global-set-key (kbd "<down>")     'c-quick-down-key)
 (global-set-key (kbd "<up>")       'c-quick-up-key)
@@ -50,14 +50,19 @@
   (if (not (c-quick-mode))
       (next-line)
     (c-quick-next-line)
-    (c-quick-show-info)))
+    (c-quick-show-info))
+  (c-quick-recenter)
+  (c-quick-show-info)
+  )
 
 (defun c-quick-up-key ()
   (interactive)
   (if (not (c-quick-mode))
       (previous-line)
     (c-quick-previous-line)
-    (c-quick-show-info)))
+    (c-quick-show-info))
+  (c-quick-recenter)
+  (c-quick-show-info))
 
 (defun c-quick-right-key ()
   (interactive)
@@ -145,10 +150,31 @@
   (let ((lines (count-lines start end)))
     (if (= lines 1) (message "1 line.") (message "%s lines." lines))))
 
+(defun c-quick-window-end ()
+  (let ((left (save-excursion
+                (goto-char (window-start))
+                (forward-line (- (window-height) 2))
+                )))
+    (if (> left 0)
+        most-positive-fixnum
+      (let ((opoint (point))
+            (wend (window-end nil t)))
+        (save-excursion
+          (goto-char wend)
+          (forward-line -1)
+          (backward-char)
+          (point))))))
+
 (defun c-quick-recenter ()
+  ;;(message "%s %s %s" (point) (window-start) (c-quick-window-end))
   (cond
    ((< (point) (window-start)) (recenter 0))
-   ((> (point) (window-end))   (recenter -1))))
+   ((> (point) (c-quick-window-end)) (recenter -1))
+   ))
+
+(defun c-quick-redisplay ()
+  (c-quick-recenter)
+  )
 
 (defun c-quick-operate-on-region-or-sexp (op)
   (interactive)
