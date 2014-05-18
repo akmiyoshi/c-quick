@@ -12,8 +12,7 @@
 (global-set-key (kbd "M-w")        'c-quick-copy-region)
 (global-set-key (kbd "C-w")        'c-quick-kill-region)
 (global-set-key (kbd "C-M-\\")     'c-quick-indent-region)
-(global-set-key (kbd "<M-delete>") 'c-quick-delete-region)
-(define-key esc-map [delete]       'c-quick-delete-region)
+(global-set-key (kbd "<C-delete>") 'c-quick-delete-region)
 (global-set-key (kbd "C-M-SPC")    'c-quick-mark-sexp)
 (global-set-key (kbd "C-M-@")      'c-quick-mark-sexp)
 
