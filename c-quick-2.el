@@ -143,8 +143,8 @@
 (defun c-quick-window-end ()
   (let ((left (save-excursion
                 (goto-char (window-start))
-                (forward-line (- (window-height) 2)))))
-    (if (> left 0)
+                (forward-line (- (window-height) 1)))))
+    (if (> left 2)
         most-positive-fixnum
       (let ((opoint (point))
             (wend (window-end nil t)))
