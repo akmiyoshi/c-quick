@@ -157,6 +157,7 @@
 (defun c-quick-recenter (dir)
   (assert dir)
   (cond
+   ((pos-visible-in-window-p (point)) nil)
    ((eq dir 'up) (when (< (point) (window-start)) (recenter 0)))
    ((eq dir 'down) (when (> (point) (c-quick-window-end)) (recenter -1)))
    (t
