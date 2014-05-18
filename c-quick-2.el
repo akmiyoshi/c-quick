@@ -5,7 +5,6 @@
 ;;
 ;; 3.1 Integer Basics
 ;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Integer-Basics.html
-;; (setq scroll-conservatively 1)
 
 (global-set-key (kbd "<down>")     'c-quick-down-key)
 (global-set-key (kbd "<up>")       'c-quick-up-key)
