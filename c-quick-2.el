@@ -10,10 +10,11 @@
 (global-set-key [left]  'c-quick-left-key)
 (global-set-key "\C-x\C-x" 'c-quick-toggle-mode)
 (global-set-key "\M-c" 'c-quick-copy-sexp)
-;(global-set-key "\M-d" 'c-quick-delete-sexp)
-(global-set-key "\M-e" 'c-quick-delete-sexp)
+(global-set-key [M-delete] 'c-quick-delete-sexp)
+(define-key esc-map [delete] 'c-quick-delete-sexp)
 (global-set-key "\M-i" 'c-quick-indent-sexp)
 (global-set-key "\M-k" 'c-quick-kill-sexp)
+(global-set-key "\M-m" 'c-quick-mark-sexp)
 
 (defvar *c-quick-ding* t)
 
@@ -172,3 +173,11 @@
   (let ((opoint (point)))
     (c-quick-forward-sexp)
     (kill-region opoint (point))))
+
+(defun c-quick-mark-sexp ()
+  (interactive)
+  (if (eq last-command this-command)
+      (c-quick-forward-sexp)
+    (let ((opoint (point)))
+      (set-mark (point))
+      (c-quick-forward-sexp))))
