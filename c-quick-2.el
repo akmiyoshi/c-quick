@@ -50,16 +50,16 @@
 
 ;;;; Internal Variables
 
-(defvar _c-quick-mode_ nil)
+(defvar _c-quick-mode_is_on_ nil)
 
 ;;;; Functions
 
 (defun c-quick-toggle-mode ()
   (interactive)
-  (setq _c-quick-mode_ (not _c-quick-mode_))
-  (c-quick-set-mode _c-quick-mode_)
+  (setq _c-quick-mode_is_on_ (not _c-quick-mode_is_on_))
+  (c-quick-set-mode _c-quick-mode_is_on_)
   (cond
-   (_c-quick-mode_ (message "c-quick-mode is ON"))
+   (_c-quick-mode_is_on_ (message "c-quick-mode is ON"))
    (t (message "c-quick-mode is OFF"))))
 
 (defun c-quick-set-mode (arg)
@@ -73,7 +73,7 @@
 (defun c-quick-mode ()
   (and
    (not (window-minibuffer-p (selected-window)))
-   _c-quick-mode_))
+   _c-quick-mode_is_on_))
 
 (defun c-quick-ding ()
   (if c-quick-ding-dings (ding)))
