@@ -15,8 +15,8 @@
 (global-set-key (kbd "C-w")        'c-quick-kill-region)
 (global-set-key (kbd "C-M-\\")     'c-quick-indent-region)
 (global-set-key (kbd "<C-delete>") 'c-quick-delete-region)
-(global-set-key (kbd "C-M-SPC")    'c-quick-mark-sexp)
-(global-set-key (kbd "C-M-@")      'c-quick-mark-sexp)
+(global-set-key (kbd "C-M-SPC")    'c-quick-mark-sexp1)
+(global-set-key (kbd "C-M-@")      'c-quick-mark-sexp2)
 
 (defvar *c-quick-ding* t)
 
@@ -191,13 +191,30 @@
   (interactive)
   (c-quick-operate-on-region-or-sexp #'kill-region))
 
-(defun c-quick-mark-sexp ()
+(defun c-quick-mark-sexp1 ()
   (interactive)
   (if (eq last-command this-command)
       (c-quick-forward-sexp)
-    (let ((opoint (point)))
+    (set-mark (point))
+    (c-quick-forward-sexp)))
+
+(defun c-quick-mark-sexp2 ()
+  (interactive)
+  (let ((opoint (point)))
+    (cond
+     ((eq last-command this-command)
+      (goto-char (region-end))
+      (c-quick-forward-sexp)
       (set-mark (point))
-      (c-quick-forward-sexp))))
+      (c-quick-recenter)
+      (goto-char opoint)
+      )
+     (t
+      (let ((opoint (point)))
+        (c-quick-forward-sexp)
+        (set-mark (point))
+        (c-quick-recenter)
+        (goto-char opoint))))))
 
 (provide 'c-quick-2)
 ;;; c-quick-2.el ends here
