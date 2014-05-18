@@ -165,9 +165,9 @@
 (defun c-quick-copy-region ()
   (interactive)
   (c-quick-operate-on-region-or-sexp
-   (lambda (beg end)
-     (kill-ring-save beg end)
-     (setq this-command 'kill-region))))
+   #'(lambda (beg end)
+       (kill-ring-save beg end)
+       (setq this-command 'kill-region))))
 
 (defun c-quick-delete-region ()
   (interactive)
