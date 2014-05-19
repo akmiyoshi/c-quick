@@ -322,7 +322,7 @@
       (switch-to-buffer found)
       (bury-buffer found))))
 
-;; Testing
+;;;; Testing
 
 (defvar _c-quick-parse-data_ nil)
 (defun c-quick-parse-region ()
