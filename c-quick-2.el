@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 0.9.2
+;; Version: 2.0.0
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,9 +29,11 @@
 (global-set-key (kbd "M-w")        'c-quick-copy-region)
 (global-set-key (kbd "C-w")        'c-quick-kill-region)
 (global-set-key (kbd "C-M-\\")     'c-quick-indent-region)
+(global-set-key (kbd "C-M-p")      'c-quick-parse-region)
 (global-set-key (kbd "<C-delete>") 'c-quick-delete-region)
 (global-set-key (kbd "C-M-SPC")    'c-quick-mark-sexp)
 (global-set-key (kbd "C-M-@")      'c-quick-mark-sexp)
+(global-set-key (kbd "<C-tab>")    'c-quick-rotate-file-buffer)
 
 ;;;; Customization
 
@@ -276,6 +278,35 @@
       (c-quick-forward-sexp)
     (set-mark (point))
     (c-quick-forward-sexp)))
+
+;; testing
+(defvar _c-quick-parse-data_ nil)
+(defun c-quick-parse-region ()
+  (interactive)
+  (c-quick-operate-on-region-or-sexp
+   #'(lambda (beg end)
+       ;; (setq _c-quick-parse-data_ (parse-partial-sexp beg end))
+       (setq _c-quick-parse-data_ (scan-sexps beg 1))
+       )))
+
+(defun c-quick-rotate-file-buffer ()
+  (interactive)
+  (let ((bufflist (buffer-list))
+        (bufforig (current-buffer))
+        (found nil)
+        currbuff buffname)
+    (while (and bufflist (not found))
+      (setq currbuff (pop bufflist))
+      (setq buffname (buffer-name currbuff))
+      (cond
+       ((eq bufforig currbuff) nil)
+       ((string-match "[*]" buffname) nil) ;; *scratch*, *Help* etc
+       ((string-match "[ ]" buffname) nil) ;; minibuffer
+       (t (setq found currbuff))))
+    (if (not found)
+        (ding)
+      (switch-to-buffer found)
+      (bury-buffer found))))
 
 (provide 'c-quick-2)
 ;;; c-quick-2.el ends here
