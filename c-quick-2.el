@@ -190,6 +190,7 @@
     (goto-char eol)
     (while (looking-back "\\s-")
       (backward-char))
+    (setq eol (point))
     (if (looking-back "\\s\"")
         nil
       (beginning-of-line)
