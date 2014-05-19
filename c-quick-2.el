@@ -5,8 +5,8 @@
 ;;
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
-;; Keywords: lisp, scheme, clojure
-;; Version: 0.9.1
+;; Keywords: lisp, clojure
+;; Version: 0.9.2
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -148,8 +148,12 @@
    ((eobp) (c-quick-ding))
    ((looking-at "\\s)") (c-quick-ding))
    ((looking-at "\\s-*\\s<")
-    (forward-line)
-    (while (looking-at "\\s-*\\s<") (forward-line)))
+    (let ((opoint (point)))
+      (forward-line)
+      (while (looking-at "\\s-*\\s<")
+        (setq opoint (point))
+        (forward-line))
+      (goto-char (max opoint (save-excursion (beginning-of-line) (point))))))
    ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
    ((looking-at "\n")
     (let ((bol? (bolp)))
@@ -173,10 +177,31 @@
    ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
    ((looking-back "\n")
     (backward-char)
-    (while (and (bolp) (looking-back "\n")
-                (save-excursion (backward-char) (bolp)))
-      (backward-char)))
+    (let ((found (c-quick-find-comment (point))))
+      (if found
+          (goto-char found)
+        (while (and (bolp) (looking-back "\n")
+                    (save-excursion (backward-char) (bolp)))
+          (backward-char)))))
    (t (ignore-errors (backward-sexp)))))
+
+(defun c-quick-find-comment (eol)
+  (save-excursion
+    (goto-char eol)
+    (beginning-of-line)
+    (let ((found nil))
+      (while (and (not found) (< (point) eol))
+        (cond
+         ((looking-at "\\s\"") (forward-sexp)) ;; 文字列クォート(ダブルクオート)
+         ((looking-at "\\sw") (forward-sexp))  ;; 単語構成文字(大小英文字、数字)
+         ((looking-at "\\s_") (forward-sexp))  ;; $&*+-_<>
+         ((looking-at "\\s'") (forward-char))  ;; 式前置子
+         ((looking-at "\\s(") (forward-char))  ;; ([{
+         ((looking-at "\\s)") (forward-char))  ;; )]}
+         ((looking-at "\\s-*\\s<") (setq found (point))) ;; コメント開始
+         ((looking-at "\\s-") (forward-char))  ;; 白文字(whitespace character)
+         (t (forward-char))))
+      found)))
 
 (defun c-quick-show-info ()
   (when (c-quick-mode)
