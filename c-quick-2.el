@@ -188,20 +188,24 @@
 (defun c-quick-find-comment (eol)
   (save-excursion
     (goto-char eol)
-    (beginning-of-line)
-    (let ((found nil))
-      (while (and (not found) (< (point) eol))
-        (cond
-         ((looking-at "\\s\"") (forward-sexp)) ;; 文字列クォート(ダブルクオート)
-         ((looking-at "\\sw") (forward-sexp))  ;; 単語構成文字(大小英文字、数字)
-         ((looking-at "\\s_") (forward-sexp))  ;; $&*+-_<>
-         ((looking-at "\\s'") (forward-char))  ;; 式前置子
-         ((looking-at "\\s(") (forward-char))  ;; ([{
-         ((looking-at "\\s)") (forward-char))  ;; )]}
-         ((looking-at "\\s-*\\s<") (setq found (point))) ;; コメント開始
-         ((looking-at "\\s-") (forward-char))  ;; 白文字(whitespace character)
-         (t (forward-char))))
-      found)))
+    (while (looking-back "\\s-")
+      (backward-char))
+    (if (looking-back "\\s\"")
+        nil
+      (beginning-of-line)
+      (let ((found nil))
+        (while (and (not found) (< (point) eol))
+          (cond
+           ((looking-at "\\s\"") (forward-sexp)) ;; 文字列クォート(ダブルクオート)
+           ((looking-at "\\sw") (forward-sexp))  ;; 単語構成文字(大小英文字、数字)
+           ((looking-at "\\s_") (forward-sexp))  ;; $&*+-_<>
+           ((looking-at "\\s'") (forward-char))  ;; 式前置子
+           ((looking-at "\\s(") (forward-char))  ;; ([{
+           ((looking-at "\\s)") (forward-char))  ;; )]}
+           ((looking-at "\\s-*\\s<") (setq found (point))) ;; コメント開始
+           ((looking-at "\\s-") (forward-char))  ;; 白文字(whitespace character)
+           (t (forward-char))))
+        found))))
 
 (defun c-quick-show-info ()
   (when (c-quick-mode)
@@ -234,12 +238,7 @@
   (cond
    ((pos-visible-in-window-p (point)) nil)
    ((eq dir 'up) (when (< (point) (window-start)) (recenter 0)))
-   ((eq dir 'down) (when (> (point) (c-quick-window-end)) (recenter -1)))
-   (t
-    ;; to be deleted.
-    (cond
-     ((< (point) (window-start)) (recenter 0))
-     ((> (point) (c-quick-window-end)) (recenter -1))))))
+   ((eq dir 'down) (when (> (point) (c-quick-window-end)) (recenter -1)))))
 
 (defun c-quick-operate-on-region-or-sexp (op)
   (interactive)
