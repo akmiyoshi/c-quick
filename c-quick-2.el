@@ -300,8 +300,8 @@
       (setq buffname (buffer-name currbuff))
       (cond
        ((eq bufforig currbuff) nil)
-       ((string-match "[*]" buffname) nil) ;; *scratch*, *Help* etc
-       ((string-match "[ ]" buffname) nil) ;; minibuffer
+       ((string-match "^[*]" buffname) nil) ;; *scratch*, *Help* etc
+       ((string-match "^[ ]" buffname) nil) ;; minibuffer
        (t (setq found currbuff))))
     (if (not found)
         (ding)
