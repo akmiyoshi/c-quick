@@ -282,20 +282,21 @@
     (set-mark (point))
     (c-quick-forward-sexp)))
 
+;; TODO: universal argument
 (defun c-quick-beginning-of-defun ()
   (interactive)
   (beginning-of-defun))
 
+;; TODO: universal argument
 (defun c-quick-end-of-defun ()
   (interactive)
-  (end-of-defun)
-  ;; (unless (looking-back "\\s)") (backward-char))
-  )
+  (end-of-defun))
 
+;; TODO: universal argument
 (defun c-quick-mark-defun ()
   (interactive)
   (if (eq last-command this-command)
-      (c-quick-forward-sexp)
+      (c-quick-end-of-defun) ;;(c-quick-forward-sexp)
     (c-quick-beginning-of-defun)
     (let ((beg (point)) end)
       (set-mark beg)
