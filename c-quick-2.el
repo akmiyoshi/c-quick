@@ -29,11 +29,14 @@
 (global-set-key (kbd "M-w")        'c-quick-copy-region)
 (global-set-key (kbd "C-w")        'c-quick-kill-region)
 (global-set-key (kbd "C-M-\\")     'c-quick-indent-region)
-(global-set-key (kbd "C-M-p")      'c-quick-parse-region)
 (global-set-key (kbd "<C-delete>") 'c-quick-delete-region)
 (global-set-key (kbd "C-M-SPC")    'c-quick-mark-sexp)
 (global-set-key (kbd "C-M-@")      'c-quick-mark-sexp)
+(global-set-key (kbd "C-M-a")      'c-quick-beginning-of-defun)
+(global-set-key (kbd "C-M-e")      'c-quick-end-of-defun)
+(global-set-key (kbd "C-M-h")      'c-quick-mark-defun)
 (global-set-key (kbd "<C-tab>")    'c-quick-rotate-file-buffer)
+(global-set-key (kbd "C-M-p")      'c-quick-parse-region)
 
 ;;;; Customization
 
@@ -279,15 +282,25 @@
     (set-mark (point))
     (c-quick-forward-sexp)))
 
-;; testing
-(defvar _c-quick-parse-data_ nil)
-(defun c-quick-parse-region ()
+(defun c-quick-beginning-of-defun ()
   (interactive)
-  (c-quick-operate-on-region-or-sexp
-   #'(lambda (beg end)
-       ;; (setq _c-quick-parse-data_ (parse-partial-sexp beg end))
-       (setq _c-quick-parse-data_ (scan-sexps beg 1))
-       )))
+  (beginning-of-defun))
+
+(defun c-quick-end-of-defun ()
+  (interactive)
+  (end-of-defun)
+  ;; (unless (looking-back "\\s)") (backward-char))
+  )
+
+(defun c-quick-mark-defun ()
+  (interactive)
+  (if (eq last-command this-command)
+      (c-quick-forward-sexp)
+    (c-quick-beginning-of-defun)
+    (let ((beg (point)) end)
+      (set-mark beg)
+      (c-quick-end-of-defun)
+      (setq end (point)))))
 
 (defun c-quick-rotate-file-buffer ()
   (interactive)
@@ -307,6 +320,17 @@
         (ding)
       (switch-to-buffer found)
       (bury-buffer found))))
+
+;; Testing
+
+(defvar _c-quick-parse-data_ nil)
+(defun c-quick-parse-region ()
+  (interactive)
+  (c-quick-operate-on-region-or-sexp
+   #'(lambda (beg end)
+       ;; (setq _c-quick-parse-data_ (parse-partial-sexp beg end))
+       (setq _c-quick-parse-data_ (scan-sexps beg 1))
+       )))
 
 (provide 'c-quick-2)
 ;;; c-quick-2.el ends here
