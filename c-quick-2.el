@@ -81,7 +81,11 @@
 
 (defun c-quick-set-mode (arg)
   (if (not arg)
-      (show-paren-mode 0)
+      (progn
+        (global-whitespace-mode 0)
+        (show-paren-mode 0)
+        )
+    (global-whitespace-mode 1)
     (setq show-paren-style
           (if c-quick-paren-only 'parenthesis 'expression))
     (setq show-paren-delay 0)
