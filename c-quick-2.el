@@ -184,7 +184,7 @@
   (interactive)
   (cond
    ((eobp) (c-quick-ding))
-   ((c-quick-within-string (point)) (forward-char))
+   ((c-quick-within-string (point)) (c-quick-forward-within-string))
    ((looking-at "\\s)") (c-quick-ding))
    ((looking-at "\\s-*\\s<")
     (let ((opoint (point)))
@@ -206,7 +206,7 @@
   (interactive)
   (cond
    ((bobp) (c-quick-ding))
-   ((c-quick-within-string (point)) (backward-char))
+   ((c-quick-within-string (point)) (c-quick-backward-within-string))
    ((looking-back "\\s(") (c-quick-ding))
    ((and (looking-back "\\s>")
          (save-excursion (forward-line -1) (looking-at "\\s-*\\s<")))
@@ -232,6 +232,32 @@
     (let ((parsed (syntax-ppss)))
       (if (nth 3 parsed) (nth 8 parsed) nil))))
 
+(defun c-quick-forward-within-string ()
+  (let ((opoint (point))
+        (parsed (syntax-ppss))
+        beg end)
+    (save-excursion
+      (setq beg (nth 8 parsed))
+      (goto-char beg)
+      (forward-sexp)
+      (setq end (point)))
+    (if (>= (point) (1- end))
+        (c-quick-ding)
+      (forward-char))))
+
+(defun c-quick-backward-within-string ()
+  (let ((opoint (point))
+        (parsed (syntax-ppss))
+        beg end)
+    (save-excursion
+      (setq beg (nth 8 parsed))
+      (goto-char beg)
+      (forward-sexp)
+      (setq end (point)))
+    (if (<= (point) (1+ beg))
+        (c-quick-ding)
+      (backward-char))))
+
 (defun c-quick-find-comment (eol)
   (save-excursion
     (goto-char eol)
@@ -246,6 +272,7 @@
   (when (c-quick-mode)
     (save-excursion
       (cond
+       ((c-quick-within-string (point)) nil)
        ((looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
         (let ((opoint (point)))
           (c-quick-backward-sexp)
