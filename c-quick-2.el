@@ -37,7 +37,7 @@
 (global-set-key (kbd "C-M-a")      'c-quick-beginning-of-defun)
 (global-set-key (kbd "C-M-e")      'c-quick-end-of-defun)
 (global-set-key (kbd "C-M-h")      'c-quick-mark-defun)
-(global-set-key (kbd "<C-tab>")    'c-quick-rotate-file-buffer)
+(global-set-key (kbd "<C-tab>")    'c-quick-rotate-buffer-for-file)
 (global-set-key (kbd "C-M-p")      'c-quick-parse-region)
 
 (global-set-key (kbd "<C-right>")  'c-quick-right-quick)
@@ -317,7 +317,7 @@
       (c-quick-end-of-defun)
       (setq end (point)))))
 
-(defun c-quick-rotate-file-buffer ()
+(defun c-quick-rotate-buffer-for-file ()
   (interactive)
   (let ((bufflist (buffer-list))
         (bufforig (current-buffer))
