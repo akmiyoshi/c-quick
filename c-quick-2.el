@@ -184,6 +184,7 @@
   (interactive)
   (cond
    ((eobp) (c-quick-ding))
+   ((c-quick-within-string (point)) (forward-char))
    ((looking-at "\\s)") (c-quick-ding))
    ((looking-at "\\s-*\\s<")
     (let ((opoint (point)))
@@ -205,6 +206,7 @@
   (interactive)
   (cond
    ((bobp) (c-quick-ding))
+   ((c-quick-within-string (point)) (backward-char))
    ((looking-back "\\s(") (c-quick-ding))
    ((and (looking-back "\\s>")
          (save-excursion (forward-line -1) (looking-at "\\s-*\\s<")))
@@ -216,7 +218,7 @@
    ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
    ((looking-back "\n")
     (backward-char)
-    (let ((found (c-quick-find-comment-2 (point))))
+    (let ((found (c-quick-find-comment (point))))
       (if found
           (goto-char found)
         (while (and (bolp) (looking-back "\n")
@@ -224,30 +226,13 @@
           (backward-char)))))
    (t (ignore-errors (backward-sexp)))))
 
-;; (defun c-quick-find-comment (eol)
-;;   (save-excursion
-;;     (goto-char eol)
-;;     (while (looking-back "\\s-")
-;;       (backward-char))
-;;     (setq eol (point))
-;;     (if (looking-back "\\s\"")
-;;         nil
-;;       (beginning-of-line)
-;;       (let ((found nil))
-;;         (while (and (not found) (< (point) eol))
-;;           (cond
-;;            ((looking-at "\\s\"") (forward-sexp)) ;; 文字列クォート(ダブルクオート)
-;;            ((looking-at "\\sw") (forward-sexp))  ;; 単語構成文字(大小英文字、数字)
-;;            ((looking-at "\\s_") (forward-sexp))  ;; $&*+-_<>
-;;            ((looking-at "\\s'") (forward-char))  ;; 式前置子
-;;            ((looking-at "\\s(") (forward-char))  ;; ([{
-;;            ((looking-at "\\s)") (forward-char))  ;; )]}
-;;            ((looking-at "\\s-*\\s<") (setq found (point))) ;; コメント開始
-;;            ((looking-at "\\s-") (forward-char))  ;; 白文字(whitespace character)
-;;            (t (forward-char))))
-;;         found))))
+(defun c-quick-within-string (pos)
+  (save-excursion
+    (goto-char pos)
+    (let ((parsed (syntax-ppss)))
+      (if (nth 3 parsed) (nth 8 parsed) nil))))
 
-(defun c-quick-find-comment-2 (eol)
+(defun c-quick-find-comment (eol)
   (save-excursion
     (goto-char eol)
     (let ((parsed (syntax-ppss)))
