@@ -46,8 +46,9 @@
 (global-set-key (kbd "<C-up>")     'c-quick-up-quick)
 (global-set-key (kbd "<C-down>")   'c-quick-down-quick)
 
-;; (global-set-key (kbd "C-x C-x")     'c-quick-jump-to-function)
 (global-set-key (kbd "M-j")        'c-quick-jump-to-function)
+;; (global-set-key (kbd "C-x C-x")     'c-quick-jump-to-function)
+(global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
 
 ;;;; Customization
 
@@ -399,6 +400,13 @@
             (symbol-function (find-function-advised-original function)))))
       ;; (message "result: %s %s" result function) (sit-for 1)
       result)))
+
+(defun c-quick-exchange-point-and-mark (arg)
+  (interactive "P")
+  (let ((active (region-active-p)))
+    (exchange-point-and-mark arg)
+    (if (not active)
+        (deactivate-mark))))
 
 ;; (defun c-quick-is-built-in-var (function)
 ;;   (ignore-errors (help-C-file-name function 'var)))
