@@ -39,6 +39,7 @@
 (global-set-key (kbd "C-M-h")      'c-quick-mark-defun)
 (global-set-key (kbd "<C-tab>")    'c-quick-rotate-buffer-for-file)
 (global-set-key (kbd "C-M-p")      'c-quick-parse-region)
+;;(global-set-key (kbd "C-M-p")      'c-quick-syntax-after)
 
 (global-set-key (kbd "<C-right>")  'c-quick-right-quick)
 (global-set-key (kbd "<C-left>")   'c-quick-left-quick)
@@ -93,8 +94,8 @@
 (defun c-quick-ding ()
   (if c-quick-ding-dings (ding)))
 
-(defun c-quick-redisplay (dir)
-  (c-quick-recenter dir)
+(defun c-quick-redisplay ()
+  (c-quick-recenter)
   (c-quick-show-info)
   (force-mode-line-update)
   (when (input-pending-p) (discard-input)))
@@ -105,7 +106,7 @@
       (c-quick-slide-down)
     (c-quick-next-line)
     )
-  (c-quick-redisplay 'down))
+  (c-quick-redisplay))
 
 (defun c-quick-up-key ()
   (interactive)
@@ -113,21 +114,21 @@
       (c-quick-slide-up)
     (c-quick-previous-line)
     )
-  (c-quick-redisplay 'up))
+  (c-quick-redisplay))
 
 (defun c-quick-right-key ()
   (interactive)
   (if (c-quick-mode)
       (c-quick-forward-sexp)
     (c-quick-forward-char))
-  (c-quick-redisplay 'down))
+  (c-quick-redisplay))
 
 (defun c-quick-left-key ()
   (interactive)
   (if (c-quick-mode)
       (c-quick-backward-sexp)
     (c-quick-backward-char))
-  (c-quick-redisplay 'up))
+  (c-quick-redisplay))
 
 (defun c-quick-right-quick ()
   (interactive)
@@ -142,12 +143,12 @@
 (defun c-quick-up-quick ()
   (interactive)
   (beginning-of-defun)
-  (c-quick-recenter 'dummy))
+  (c-quick-recenter))
 
 (defun c-quick-down-quick ()
   (interactive)
   (end-of-defun)
-  (c-quick-recenter 'dummy))
+  (c-quick-recenter))
 
 (defun c-quick-slide-down ()
   (if (not (bolp))
@@ -215,7 +216,7 @@
    ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
    ((looking-back "\n")
     (backward-char)
-    (let ((found (c-quick-find-comment (point))))
+    (let ((found (c-quick-find-comment-2 (point))))
       (if found
           (goto-char found)
         (while (and (bolp) (looking-back "\n")
@@ -223,28 +224,38 @@
           (backward-char)))))
    (t (ignore-errors (backward-sexp)))))
 
-(defun c-quick-find-comment (eol)
+;; (defun c-quick-find-comment (eol)
+;;   (save-excursion
+;;     (goto-char eol)
+;;     (while (looking-back "\\s-")
+;;       (backward-char))
+;;     (setq eol (point))
+;;     (if (looking-back "\\s\"")
+;;         nil
+;;       (beginning-of-line)
+;;       (let ((found nil))
+;;         (while (and (not found) (< (point) eol))
+;;           (cond
+;;            ((looking-at "\\s\"") (forward-sexp)) ;; 文字列クォート(ダブルクオート)
+;;            ((looking-at "\\sw") (forward-sexp))  ;; 単語構成文字(大小英文字、数字)
+;;            ((looking-at "\\s_") (forward-sexp))  ;; $&*+-_<>
+;;            ((looking-at "\\s'") (forward-char))  ;; 式前置子
+;;            ((looking-at "\\s(") (forward-char))  ;; ([{
+;;            ((looking-at "\\s)") (forward-char))  ;; )]}
+;;            ((looking-at "\\s-*\\s<") (setq found (point))) ;; コメント開始
+;;            ((looking-at "\\s-") (forward-char))  ;; 白文字(whitespace character)
+;;            (t (forward-char))))
+;;         found))))
+
+(defun c-quick-find-comment-2 (eol)
   (save-excursion
     (goto-char eol)
-    (while (looking-back "\\s-")
-      (backward-char))
-    (setq eol (point))
-    (if (looking-back "\\s\"")
-        nil
-      (beginning-of-line)
-      (let ((found nil))
-        (while (and (not found) (< (point) eol))
-          (cond
-           ((looking-at "\\s\"") (forward-sexp)) ;; 文字列クォート(ダブルクオート)
-           ((looking-at "\\sw") (forward-sexp))  ;; 単語構成文字(大小英文字、数字)
-           ((looking-at "\\s_") (forward-sexp))  ;; $&*+-_<>
-           ((looking-at "\\s'") (forward-char))  ;; 式前置子
-           ((looking-at "\\s(") (forward-char))  ;; ([{
-           ((looking-at "\\s)") (forward-char))  ;; )]}
-           ((looking-at "\\s-*\\s<") (setq found (point))) ;; コメント開始
-           ((looking-at "\\s-") (forward-char))  ;; 白文字(whitespace character)
-           (t (forward-char))))
-        found))))
+    (let ((parsed (syntax-ppss)))
+      (if (not (nth 4 parsed))
+          nil
+        (goto-char (nth 8 parsed))
+        (while (looking-back "\\s-") (backward-char))
+        (point)))))
 
 (defun c-quick-show-info ()
   (when (c-quick-mode)
@@ -265,7 +276,7 @@
   (let ((lines (count-lines start end)))
     (if (= lines 1) (message "1 line.") (message "%s lines." lines))))
 
-(defun c-quick-recenter (dir)
+(defun c-quick-recenter ()
   (cond
    ((pos-visible-in-window-p (point)) nil)
    ((< (point) (window-start)) (recenter 0))
@@ -345,21 +356,24 @@
   (c-quick-operate-on-region-or-sexp
    #'(lambda (beg end)
        ;; (setq _c-quick-parse-data_ (parse-partial-sexp beg end))
-       (setq _c-quick-parse-data_ (scan-sexps beg 1))
+       ;;(setq _c-quick-parse-data_ (scan-sexps beg 1))
+       (setq _c-quick-parse-data_ (syntax-ppss))
        )))
 
 (defun c-quick-jump-to-function ()
   (interactive)
   (let* ((func-name (find-tag-default))
          (interned (intern func-name)))
-    (message "func-name: %s" func-name)
+    ;; (message "func-name: %s" func-name)
     (if (c-quick-is-built-in-func interned)
-        (error "%s is a built-in function(test)" interned)
+        (error "%s is a built-in function" interned)
       (or
        (and (fboundp interned)
             (find-function-do-it interned nil 'switch-to-buffer))
        (and (boundp interned)
-            (find-function-do-it interned 'defvar 'switch-to-buffer)))
+            (find-function-do-it interned 'defvar 'switch-to-buffer))
+       ;; (error "%s not found" func-name)
+       )
       )
     ))
 
@@ -371,6 +385,12 @@
       (setq function (symbol-function (find-function-advised-original function))
             def (symbol-function (find-function-advised-original function))))
     (subrp def))))
+
+(defun c-quick-syntax-after ()
+  (interactive)
+  (let ((x ";")) nil)
+  (message "%s" (syntax-after (point)))
+  )
 
 (provide 'c-quick-2)
 ;;; c-quick-2.el ends here
