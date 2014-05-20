@@ -38,8 +38,8 @@
 (global-set-key (kbd "C-M-e")      'c-quick-end-of-defun)
 (global-set-key (kbd "C-M-h")      'c-quick-mark-defun)
 (global-set-key (kbd "<C-tab>")    'c-quick-rotate-buffer-for-file)
-(global-set-key (kbd "C-M-p")      'c-quick-parse-region)
-;;(global-set-key (kbd "C-M-p")      'c-quick-syntax-after)
+;; (global-set-key (kbd "C-M-p")      'c-quick-parse-region)
+;; (global-set-key (kbd "C-M-p")      'c-quick-syntax-after)
 
 (global-set-key (kbd "<C-right>")  'c-quick-right-quick)
 (global-set-key (kbd "<C-left>")   'c-quick-left-quick)
@@ -362,15 +362,15 @@
 
 ;;;; Testing
 
-(defvar _c-quick-parse-data_ nil)
-(defun c-quick-parse-region ()
-  (interactive)
-  (c-quick-operate-on-region-or-sexp
-   #'(lambda (beg end)
-       ;; (setq _c-quick-parse-data_ (parse-partial-sexp beg end))
-       ;;(setq _c-quick-parse-data_ (scan-sexps beg 1))
-       (setq _c-quick-parse-data_ (syntax-ppss))
-       )))
+;; (defvar _c-quick-parse-data_ nil)
+;; (defun c-quick-parse-region ()
+;;   (interactive)
+;;   (c-quick-operate-on-region-or-sexp
+;;    #'(lambda (beg end)
+;;        ;; (setq _c-quick-parse-data_ (parse-partial-sexp beg end))
+;;        ;;(setq _c-quick-parse-data_ (scan-sexps beg 1))
+;;        (setq _c-quick-parse-data_ (syntax-ppss))
+;;        )))
 
 (defun c-quick-jump-to-function ()
   (interactive)
@@ -379,30 +379,35 @@
     ;; (message "func-name: %s" func-name)
     (if (c-quick-is-built-in-func interned)
         (error "%s is a built-in function" interned)
-      (or
-       (and (fboundp interned)
-            (find-function-do-it interned nil 'switch-to-buffer))
-       (and (boundp interned)
-            (find-function-do-it interned 'defvar 'switch-to-buffer))
-       ;; (error "%s not found" func-name)
-       )
-      )
-    ))
+      (cond
+       ((user-variable-p interned)
+        ;; (find-function-do-it interned 'var 'switch-to-buffer)
+        (find-variable interned)
+        )
+       ((not (fboundp interned))
+        (error "%s is not a function" interned))
+       (t
+        ;; (find-function-do-it interned nil 'switch-to-buffer)
+        (find-function interned)
+        )))))
 
 (defun c-quick-is-built-in-func (function)
   (if (not (fboundp function))
       nil
-  (let ((def (symbol-function (find-function-advised-original function))))
-    (while (symbolp def)
-      (setq function (symbol-function (find-function-advised-original function))
-            def (symbol-function (find-function-advised-original function))))
-    (subrp def))))
+    (let ((result
+           (subrp
+            (symbol-function (find-function-advised-original function)))))
+      ;; (message "result: %s %s" result function) (sit-for 1)
+      result)))
 
-(defun c-quick-syntax-after ()
-  (interactive)
-  (let ((x ";")) nil)
-  (message "%s" (syntax-after (point)))
-  )
+;; (defun c-quick-is-built-in-var (function)
+;;   (ignore-errors (help-C-file-name function 'var)))
+
+;; (defun c-quick-syntax-after ()
+;;   (interactive)
+;;   (let ((x ";")) nil)
+;;   (message "%s" (syntax-after (point)))
+;;   )
 
 (provide 'c-quick-2)
 ;;; c-quick-2.el ends here
