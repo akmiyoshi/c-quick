@@ -13,3 +13,5 @@ http://www.gnu.org/software/emacs/manual/html_node/elisp/Window-Start-and-End.ht
 
 34.2.1 構文クラス一覧
 http://www.geocities.co.jp/SiliconValley-Bay/9285/ELISP-JA/elisp_565.html
+
+http://www.gnu.org/software/emacs/manual/html_node/elisp/Position-Parse.html
