@@ -21,6 +21,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+(require 'find-func)
+
 (global-set-key (kbd "<down>")     'c-quick-down-key)
 (global-set-key (kbd "<up>")       'c-quick-up-key)
 (global-set-key (kbd "<right>")    'c-quick-right-key)
@@ -38,6 +40,14 @@
 (global-set-key (kbd "<C-tab>")    'c-quick-rotate-file-buffer)
 (global-set-key (kbd "C-M-p")      'c-quick-parse-region)
 
+(global-set-key (kbd "<C-right>")  'c-quick-right-quick)
+(global-set-key (kbd "<C-left>")   'c-quick-left-quick)
+(global-set-key (kbd "<C-up>")     'c-quick-up-quick)
+(global-set-key (kbd "<C-down>")   'c-quick-down-quick)
+
+;; (global-set-key (kbd "C-x C-x")     'c-quick-jump-to-function)
+(global-set-key (kbd "M-j")        'c-quick-jump-to-function)
+
 ;;;; Customization
 
 (defgroup c-quick nil
@@ -49,7 +59,7 @@
   :group 'c-quick
   :type  'boolean)
 
-(defcustom c-quick-paren-only nil ""
+(defcustom c-quick-paren-only t ""
   :group 'c-quick
   :type  'boolean)
 
@@ -86,7 +96,8 @@
 (defun c-quick-redisplay (dir)
   (c-quick-recenter dir)
   (c-quick-show-info)
-  (force-mode-line-update))
+  (force-mode-line-update)
+  (when (input-pending-p) (discard-input)))
 
 (defun c-quick-down-key ()
   (interactive)
@@ -117,6 +128,26 @@
       (c-quick-backward-sexp)
     (c-quick-backward-char))
   (c-quick-redisplay 'up))
+
+(defun c-quick-right-quick ()
+  (interactive)
+  (c-quick-forward-sexp)
+  (c-quick-recenter))
+
+(defun c-quick-left-quick ()
+  (interactive)
+  (c-quick-backward-sexp)
+  (c-quick-recenter))
+
+(defun c-quick-up-quick ()
+  (interactive)
+  (beginning-of-defun)
+  (c-quick-recenter 'dummy))
+
+(defun c-quick-down-quick ()
+  (interactive)
+  (end-of-defun)
+  (c-quick-recenter 'dummy))
 
 (defun c-quick-slide-down ()
   (if (not (bolp))
@@ -149,6 +180,7 @@
     (previous-line)))
 
 (defun c-quick-forward-sexp ()
+  (interactive)
   (cond
    ((eobp) (c-quick-ding))
    ((looking-at "\\s)") (c-quick-ding))
@@ -169,6 +201,7 @@
    (t (ignore-errors (forward-sexp)))))
 
 (defun c-quick-backward-sexp ()
+  (interactive)
   (cond
    ((bobp) (c-quick-ding))
    ((looking-back "\\s(") (c-quick-ding))
@@ -232,19 +265,11 @@
   (let ((lines (count-lines start end)))
     (if (= lines 1) (message "1 line.") (message "%s lines." lines))))
 
-(defun c-quick-window-end ()
-  (let ((wend (window-end)))
-    (save-excursion
-      (goto-char wend)
-      (forward-line -1)
-      (backward-char)
-      (point))))
-
 (defun c-quick-recenter (dir)
   (cond
    ((pos-visible-in-window-p (point)) nil)
-   ((eq dir 'up) (when (< (point) (window-start)) (recenter 0)))
-   ((eq dir 'down) (when (> (point) (c-quick-window-end)) (recenter -1)))))
+   ((< (point) (window-start)) (recenter 0))
+   (t (recenter -1))))
 
 (defun c-quick-operate-on-region-or-sexp (op)
   (interactive)
@@ -282,17 +307,6 @@
     (set-mark (point))
     (c-quick-forward-sexp)))
 
-;; TODO: universal argument
-(defun c-quick-beginning-of-defun ()
-  (interactive)
-  (beginning-of-defun))
-
-;; TODO: universal argument
-(defun c-quick-end-of-defun ()
-  (interactive)
-  (end-of-defun))
-
-;; TODO: universal argument
 (defun c-quick-mark-defun ()
   (interactive)
   (if (eq last-command this-command)
@@ -334,16 +348,29 @@
        (setq _c-quick-parse-data_ (scan-sexps beg 1))
        )))
 
+(defun c-quick-jump-to-function ()
+  (interactive)
+  (let* ((func-name (find-tag-default))
+         (interned (intern func-name)))
+    (message "func-name: %s" func-name)
+    (if (c-quick-is-built-in-func interned)
+        (error "%s is a built-in function(test)" interned)
+      (or
+       (and (fboundp interned)
+            (find-function-do-it interned nil 'switch-to-buffer))
+       (and (boundp interned)
+            (find-function-do-it interned 'defvar 'switch-to-buffer)))
+      )
+    ))
+
+(defun c-quick-is-built-in-func (function)
+  (if (not (fboundp function))
+      nil
+  (let ((def (symbol-function (find-function-advised-original function))))
+    (while (symbolp def)
+      (setq function (symbol-function (find-function-advised-original function))
+            def (symbol-function (find-function-advised-original function))))
+    (subrp def))))
+
 (provide 'c-quick-2)
 ;;; c-quick-2.el ends here
-
-;; [参考文献]
-;;
-;; 3.1 Integer Basics
-;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Integer-Basics.html
-;;
-;; 28.19 The Window Start and End Positions
-;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Window-Start-and-End.html
-;;
-;; 34.2.1 構文クラス一覧
-;; http://www.geocities.co.jp/SiliconValley-Bay/9285/ELISP-JA/elisp_565.html
