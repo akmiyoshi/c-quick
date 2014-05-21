@@ -39,8 +39,6 @@
 (global-set-key (kbd "C-M-e")      'c-quick-end-of-defun)
 (global-set-key (kbd "C-M-h")      'c-quick-mark-defun)
 (global-set-key (kbd "<C-tab>")    'c-quick-rotate-buffer-for-file)
-;; (global-set-key (kbd "C-M-p")      'c-quick-parse-region)
-;; (global-set-key (kbd "C-M-p")      'c-quick-syntax-after)
 
 (global-set-key (kbd "<C-right>")  'c-quick-right-quick)
 (global-set-key (kbd "<C-left>")   'c-quick-left-quick)
@@ -48,7 +46,6 @@
 (global-set-key (kbd "<C-down>")   'c-quick-down-quick)
 
 (global-set-key (kbd "M-j")        'c-quick-jump-to-function)
-;; (global-set-key (kbd "C-x C-x")     'c-quick-jump-to-function)
 (global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
 
 ;;;; Customization
@@ -215,12 +212,6 @@
      ((bobp) (c-quick-ding))
      ((c-quick-within-string (point)) (c-quick-backward-within-string))
      ((looking-back "\\s(") (c-quick-ding))
-     ;; ((and (looking-back "\\s>")
-     ;;       (save-excursion (forward-line -1) (looking-at "\\s-*\\s<")))
-     ;;  (goto-char (match-beginning 0))
-     ;;  (while (and (looking-back "\\s>")
-     ;;              (save-excursion (forward-line -1) (looking-at "\\s-*\\s<")))
-     ;;    (goto-char (match-beginning 0))))
      ((and (looking-back "\\s>")
            (save-excursion (backward-char)
                            (setq comment-start (c-quick-find-comment (point)))))
@@ -232,14 +223,6 @@
         (goto-char comment-start)))
      ((looking-back "\\s-") (while (looking-back "\\s-") (backward-char)))
      ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
-     ;; ((looking-back "\n")
-     ;;  (backward-char)
-     ;;  (let ((found (c-quick-find-comment (point))))
-     ;;    (if found
-     ;;        (goto-char found)
-     ;;      (while (and (bolp) (looking-back "\n")
-     ;;                  (save-excursion (backward-char) (bolp)))
-     ;;        (backward-char)))))
      ((looking-back "\n")
       (backward-char)
       (while (and (bolp) (looking-back "\n")
@@ -383,16 +366,6 @@
 
 ;;;; Testing
 
-;; (defvar _c-quick-parse-data_ nil)
-;; (defun c-quick-parse-region ()
-;;   (interactive)
-;;   (c-quick-operate-on-region-or-sexp
-;;    #'(lambda (beg end)
-;;        ;; (setq _c-quick-parse-data_ (parse-partial-sexp beg end))
-;;        ;;(setq _c-quick-parse-data_ (scan-sexps beg 1))
-;;        (setq _c-quick-parse-data_ (syntax-ppss))
-;;        )))
-
 (defun c-quick-jump-to-function ()
   (interactive)
   (let* ((func-name (find-tag-default))
@@ -427,15 +400,6 @@
     (exchange-point-and-mark arg)
     (if (not active)
         (deactivate-mark))))
-
-;; (defun c-quick-is-built-in-var (function)
-;;   (ignore-errors (help-C-file-name function 'var)))
-
-;; (defun c-quick-syntax-after ()
-;;   (interactive)
-;;   (let ((x ";")) nil)
-;;   (message "%s" (syntax-after (point)))
-;;   )
 
 (provide 'c-quick-2)
 ;;; c-quick-2.el ends here
