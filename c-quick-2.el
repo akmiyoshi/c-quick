@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.1
+;; Version: 2.0.2
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -214,13 +214,16 @@
      ((c-quick-within-comment (point)) (c-quick-backward-within-comment))
      ((looking-back "\\s(") (c-quick-ding))
      ((and (looking-back "\\s>")
-           (save-excursion (backward-char)
-                           (setq comment-begin (c-quick-find-comment (point)))))
+           (save-excursion
+             (backward-char)
+             (setq comment-begin
+                   (c-quick-find-comment-beginning (point)))))
       (goto-char comment-begin)
       (while (and (looking-back "\\s>")
                   (save-excursion
                     (backward-char)
-                    (setq comment-begin (c-quick-find-comment (point)))))
+                    (setq comment-begin
+                          (c-quick-find-comment-beginning (point)))))
         (goto-char comment-begin)))
      ((looking-back "\\s-") (while (looking-back "\\s-") (backward-char)))
      ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
@@ -272,7 +275,9 @@
         (goto-char (nth 8 parsed))
         (while (looking-at "\\s<")
           (forward-char))
-        (list (nth 8 parsed) (point))))))
+        (list (nth 8 parsed)
+              (point)
+              (progn (end-of-line) (point)))))))
 
 (defun c-quick-forward-within-comment ()
   (let (within-comment)
@@ -307,13 +312,23 @@
       (c-quick-ding))
      (t (backward-char)))))
 
-(defun c-quick-find-comment (eol)
+;; (defun c-quick-find-comment-beginning (eol)
+;;   (save-excursion
+;;     (goto-char eol)
+;;     (let ((parsed (syntax-ppss)))
+;;       (if (not (nth 4 parsed))
+;;           nil
+;;         (goto-char (nth 8 parsed))
+;;         (while (looking-back "\\s-") (backward-char))
+;;         (point)))))
+
+(defun c-quick-find-comment-beginning (eol)
   (save-excursion
     (goto-char eol)
-    (let ((parsed (syntax-ppss)))
-      (if (not (nth 4 parsed))
+    (let ((parsed (c-quick-within-comment (point))))
+      (if (not parsed)
           nil
-        (goto-char (nth 8 parsed))
+        (goto-char (nth 0 parsed))
         (while (looking-back "\\s-") (backward-char))
         (point)))))
 
