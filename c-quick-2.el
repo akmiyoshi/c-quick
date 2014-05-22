@@ -45,8 +45,7 @@
 (global-set-key (kbd "<C-up>")     'c-quick-up-quick)
 (global-set-key (kbd "<C-down>")   'c-quick-down-quick)
 
-;; (global-set-key (kbd "M-j")        'c-quick-jump-to-function)
-(global-set-key (kbd "C-M-.")        'c-quick-jump-to-function)
+(global-set-key (kbd "C-M-.")        'c-quick-jump-to-function-or-variable)
 (global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
 
 ;;;; Customization
@@ -188,6 +187,7 @@
   (cond
    ((eobp) (c-quick-ding))
    ((c-quick-within-string (point)) (c-quick-forward-within-string))
+   ((c-quick-within-comment (point)) (c-quick-forward-within-comment))
    ((looking-at "\\s)") (c-quick-ding))
    ((looking-at "\\s-*\\s<")
     (let ((opoint (point)))
@@ -211,6 +211,7 @@
     (cond
      ((bobp) (c-quick-ding))
      ((c-quick-within-string (point)) (c-quick-backward-within-string))
+     ((c-quick-within-comment (point)) (c-quick-backward-within-comment))
      ((looking-back "\\s(") (c-quick-ding))
      ((and (looking-back "\\s>")
            (save-excursion (backward-char)
@@ -261,6 +262,50 @@
     (if (<= (point) (1+ beg))
         (c-quick-ding)
       (backward-char))))
+
+(defun c-quick-within-comment (pos)
+  (save-excursion
+    (goto-char pos)
+    (let ((parsed (syntax-ppss)))
+      (if (not (nth 4 parsed))
+          nil
+        (goto-char (nth 8 parsed))
+        (while (looking-at "\\s<")
+          (forward-char))
+        (list (nth 8 parsed) (point))))))
+
+(defun c-quick-forward-within-comment ()
+  (let (within-comment)
+    (cond
+     ((and
+       (looking-at "\\s>")
+       (save-excursion
+         (forward-line)
+         (end-of-line)
+         (setq within-comment
+               (c-quick-within-comment (point)))))
+      (goto-char (nth 1 within-comment)))
+     ((looking-at "\\s>")
+      (c-quick-ding))
+     (t (forward-char)))))
+
+(defun c-quick-backward-within-comment ()
+  (let ((within-comment (c-quick-within-comment (point))))
+    (cond
+     ((and
+       (<= (point) (nth 1 within-comment))
+       (save-excursion
+         (beginning-of-line)
+         (and
+          (looking-back "\\s>")
+          (progn
+            (backward-char)
+            (c-quick-within-comment (point))))))
+      (beginning-of-line)
+      (backward-char))
+     ((<= (point) (nth 1 within-comment))
+      (c-quick-ding))
+     (t (backward-char)))))
 
 (defun c-quick-find-comment (eol)
   (save-excursion
@@ -337,7 +382,7 @@
 (defun c-quick-mark-defun ()
   (interactive)
   (if (eq last-command this-command)
-      (end-of-defun) ;;(c-quick-forward-sexp)
+      (end-of-defun)
     (beginning-of-defun)
     (let ((beg (point)) end)
       (set-mark beg)
@@ -366,33 +411,26 @@
 
 ;;;; Testing
 
-(defun c-quick-jump-to-function ()
+(defun c-quick-jump-to-function-or-variable ()
   (interactive)
   (let* ((func-name (find-tag-default))
          (interned (intern func-name)))
-    ;; (message "func-name: %s" func-name)
-    (if (c-quick-is-built-in-func interned)
-        (error "%s is a built-in function" interned)
-      (cond
-       ((user-variable-p interned)
-        ;; (find-function-do-it interned 'var 'switch-to-buffer)
-        (find-variable interned)
-        )
-       ((not (fboundp interned))
-        (error "%s is not a function" interned))
-       (t
-        ;; (find-function-do-it interned nil 'switch-to-buffer)
-        (find-function interned)
-        )))))
+    (cond
+     ((c-quick-built-in-function-p interned)
+      (error "%s is a built-in function" interned))
+     ((fboundp interned)
+      (find-function interned))
+     ((user-variable-p interned)
+      (find-variable interned))
+     (t (error "%s is not a lisp function nor a user variable" interned)))))
 
-(defun c-quick-is-built-in-func (function)
-  (if (not (fboundp function))
+(defun c-quick-built-in-function-p (symbol)
+  ;; (require 'cl) (assert (symbolp symbol))
+  (if (not (fboundp symbol))
       nil
-    (let ((result
-           (subrp
-            (symbol-function (find-function-advised-original function)))))
-      ;; (message "result: %s %s" result function) (sit-for 1)
-      result)))
+    (subrp
+     (symbol-function
+      (find-function-advised-original symbol)))))
 
 (defun c-quick-exchange-point-and-mark (arg)
   (interactive "P")
