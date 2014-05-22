@@ -45,7 +45,8 @@
 (global-set-key (kbd "<C-up>")     'c-quick-up-quick)
 (global-set-key (kbd "<C-down>")   'c-quick-down-quick)
 
-(global-set-key (kbd "M-j")        'c-quick-jump-to-function)
+;; (global-set-key (kbd "M-j")        'c-quick-jump-to-function)
+(global-set-key (kbd "C-M-.")        'c-quick-jump-to-function)
 (global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
 
 ;;;; Customization
@@ -145,12 +146,12 @@
 (defun c-quick-up-quick ()
   (interactive)
   (beginning-of-defun)
-  (c-quick-recenter))
+  (recenter))
 
 (defun c-quick-down-quick ()
   (interactive)
   (end-of-defun)
-  (c-quick-recenter))
+  (recenter))
 
 (defun c-quick-slide-down ()
   (if (not (bolp))
