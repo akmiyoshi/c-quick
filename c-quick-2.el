@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.0
+;; Version: 2.0.1
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -81,8 +81,7 @@
   (if (not arg)
       (progn
         (global-whitespace-mode 0)
-        (show-paren-mode 0)
-        )
+        (show-paren-mode 0))
     (global-whitespace-mode 1)
     (setq show-paren-style
           (if c-quick-paren-only 'parenthesis 'expression))
