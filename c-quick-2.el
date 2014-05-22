@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.2
+;; Version: 2.0.3
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@
 (global-set-key (kbd "<C-up>")     'c-quick-up-quick)
 (global-set-key (kbd "<C-down>")   'c-quick-down-quick)
 
-(global-set-key (kbd "C-M-.")        'c-quick-jump-to-function-or-variable)
+(global-set-key (kbd "C-M-.")      'c-quick-jump-to-function-or-variable)
 (global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
 
 ;;;; Customization
@@ -205,6 +205,23 @@
           (forward-char)))))
    (t (ignore-errors (forward-sexp)))))
 
+(defun c-quick-forward-sexp-1-line ()
+  (cond
+   ((eobp) (c-quick-ding))
+   ((looking-at "\\s)") (c-quick-ding))
+   ((looking-at "\\s-*\\s<+")
+    (goto-char (match-end 0)))
+   ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
+   ((looking-at "\n") nil)
+   (t (let ((opoint (point))
+            (eol (save-excursion (end-of-line) (point))))
+        (condition-case err
+            (forward-sexp)
+          (error (c-quick-ding)))
+        (when (> (point) eol)
+          (goto-char opoint)
+          (c-quick-ding))))))
+
 (defun c-quick-backward-sexp ()
   (interactive)
   (let (comment-begin)
@@ -233,6 +250,25 @@
                       (save-excursion (backward-char) (bolp)))
             (backward-char)))
      (t (ignore-errors (backward-sexp))))))
+
+(defun c-quick-backward-sexp-1-line ()
+  (interactive)
+  (let (comment-begin)
+    (cond
+     ((bobp) (c-quick-ding))
+     ((looking-back "\\s(") (c-quick-ding))
+     ((looking-back "\\s-") (while (looking-back "\\s-") (backward-char)))
+     ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
+     ((looking-back "\n") nil)
+     (t (let* ((opoint (point))
+               (within-comment (c-quick-within-comment (point)))
+               (bol (nth 1 within-comment)))
+          (condition-case err
+              (backward-sexp)
+            (error (c-quick-ding)))
+          (when (< (point) bol)
+            (goto-char opoint)
+            (c-quick-ding)))))))
 
 (defun c-quick-within-string (pos)
   (save-excursion
@@ -292,7 +328,7 @@
       (goto-char (nth 1 within-comment)))
      ((looking-at "\\s>")
       (c-quick-ding))
-     (t (forward-char)))))
+     (t (c-quick-forward-sexp-1-line)))))
 
 (defun c-quick-backward-within-comment ()
   (let ((within-comment (c-quick-within-comment (point))))
@@ -310,17 +346,7 @@
       (backward-char))
      ((<= (point) (nth 1 within-comment))
       (c-quick-ding))
-     (t (backward-char)))))
-
-;; (defun c-quick-find-comment-beginning (eol)
-;;   (save-excursion
-;;     (goto-char eol)
-;;     (let ((parsed (syntax-ppss)))
-;;       (if (not (nth 4 parsed))
-;;           nil
-;;         (goto-char (nth 8 parsed))
-;;         (while (looking-back "\\s-") (backward-char))
-;;         (point)))))
+     (t (c-quick-backward-sexp-1-line)))))
 
 (defun c-quick-find-comment-beginning (eol)
   (save-excursion
@@ -333,7 +359,7 @@
         (point)))))
 
 (defun c-quick-show-info ()
-  (when (c-quick-mode)
+  (when (and (c-quick-mode) (not (c-quick-within-comment (point))))
     (save-excursion
       (cond
        ((c-quick-within-string (point)) nil)
@@ -415,9 +441,9 @@
       (setq buffname (buffer-name currbuff))
       (cond
        ((eq bufforig currbuff) nil)
-       ((minibufferp currbuff) nil)         ;; minibuffer
-       ((string-match "^[*]" buffname) nil) ;; *scratch*, *Help* etc
-       ((string-match "^[ ]" buffname) nil) ;; work buffer
+       ((minibufferp currbuff) nil)         ;; minibuffer(1)
+       ((string-match "^[ ]" buffname) nil) ;; minibuffer(2)
+       ((string-match "^[*]" buffname) nil) ;; *scratch*, *Help*, etc
        (t (setq found currbuff))))
     (if (not found)
         (ding)
