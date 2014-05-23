@@ -196,12 +196,14 @@
 (defun c-quick-next-line ()
   (if (save-excursion (end-of-line) (eobp))
       (c-quick-ding)
-    (next-line 1)))
+    (next-line 1)
+    (setq this-command 'next-line)))
 
 (defun c-quick-previous-line ()
   (if (save-excursion (beginning-of-line) (bobp))
       (c-quick-ding)
-    (previous-line 1)))
+    (previous-line 1)
+    (setq this-command 'previous-line)))
 
 (defun c-quick-forward-sexp ()
   (interactive)
