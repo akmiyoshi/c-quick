@@ -462,7 +462,7 @@
 
 (defun c-quick-jump-to-function-or-variable ()
   (interactive)
-  (let* ((func-name (find-tag-default))
+  (let* ((func-name (cq-find-tag-default))
          (interned (intern func-name)))
     (cond
      ((c-quick-built-in-function-p interned)
@@ -479,7 +479,43 @@
       nil
     (subrp
      (symbol-function
-      (find-function-advised-original symbol)))))
+      (cq-find-function-advised-original symbol)))))
+
+(defun cq-find-tag-default ()
+  "Determine default tag to search for, based on text at point.
+If there is no plausible default, return nil."
+  (let (from to bound)
+    (when (or (progn
+                ;; Look at text around `point'.
+                (save-excursion
+                  (skip-syntax-backward "w_") (setq from (point)))
+                (save-excursion
+                  (skip-syntax-forward "w_") (setq to (point)))
+                (> to from))
+              ;; Look between `line-beginning-position' and `point'.
+              (save-excursion
+                (and (setq bound (line-beginning-position))
+                     (skip-syntax-backward "^w_" bound)
+                     (> (setq to (point)) bound)
+                     (skip-syntax-backward "w_")
+                     (setq from (point))))
+              ;; Look between `point' and `line-end-position'.
+              (save-excursion
+                (and (setq bound (line-end-position))
+                     (skip-syntax-forward "^w_" bound)
+                     (< (setq from (point)) bound)
+                     (skip-syntax-forward "w_")
+                     (setq to (point)))))
+      (buffer-substring-no-properties from to))))
+
+(defun cq-find-function-advised-original (func)
+  "Return the original function symbol of an advised function FUNC.
+If FUNC is not the symbol of an advised function, just returns FUNC."
+  (or (and (symbolp func)
+           (featurep 'advice)
+           (let ((ofunc (cdr (assq 'origname (ad-get-advice-info func)))))
+             (and (fboundp ofunc) ofunc)))
+      func))
 
 (defun c-quick-exchange-point-and-mark (arg)
   (interactive "P")
