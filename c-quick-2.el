@@ -575,18 +575,6 @@ If FUNC is not the symbol of an advised function, just returns FUNC."
 
 (defvar cq-font-lock-beginning-of-syntax-function)
 
-(defsubst cq-syntax-ppss-depth (ppss)
-  (nth 0 ppss))
-
-(defsubst cq-syntax-ppss-context (ppss)
-  "Return non-nil if syntactic state PPSS means in a string or comment.
-Return `string' or `comment' as appropriate, otherwise nil.
-PPSS is a list as returned by `parse-partial-sexp'."
-  (cond
-   ((nth 3 ppss) 'string)
-   ((nth 4 ppss) 'comment)
-   (t nil)))
-
 (defvar cq-syntax-ppss-max-span 20000
   "Threshold below which cache info is deemed unnecessary.
 We try to make sure that cache entries are at least this far apart
@@ -799,31 +787,6 @@ The match data may be altered through running `cq-syntax-begin-function' (or
        ;; point-min.  In that case, just parse from point-min assuming
        ;; a nil state.
        (parse-partial-sexp (point-min) pos)))))
-
-;; Debugging functions
-
-(defun cq-syntax-ppss-debug ()
-  (let ((pt nil)
-        (min-diffs nil))
-    (dolist (x (append cq-syntax-ppss-cache (list (cons (point-min) nil))))
-      (when pt (push (- pt (car x)) min-diffs))
-      (setq pt (car x)))
-    min-diffs))
-
-;; XEmacs compatibility functions
-
-;; (defun buffer-syntactic-context (&optional buffer)
-;;   "Syntactic context at point in BUFFER.
-;; Either of `string', `comment' or `nil'.
-;; This is an XEmacs compatibility function."
-;;   (with-current-buffer (or buffer (current-buffer))
-;;     (cq-syntax-ppss-context (cq-syntax-ppss))))
-
-;; (defun buffer-syntactic-context-depth (&optional buffer)
-;;   "Syntactic parenthesis depth at point in BUFFER.
-;; This is an XEmacs compatibility function."
-;;   (with-current-buffer (or buffer (current-buffer))
-;;     (cq-syntax-ppss-depth (cq-syntax-ppss))))
 
 ;; (provide 'syntax)
 
