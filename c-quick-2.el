@@ -553,9 +553,9 @@ If FUNC is not the symbol of an advised function, just returns FUNC."
 
 ;; The main exported function is `cq-syntax-ppss'.  You might also need
 ;; to call `cq-syntax-ppss-flush-cache' or to add it to
-;; `before-change-functions'(although this is automatically done by
+;; `cq-before-change-functions'(although this is automatically done by
 ;; cq-syntax-ppss when needed, but that might fail if cq-syntax-ppss is
-;; called in a context where before-change-functions is temporarily
+;; called in a context where cq-before-change-functions is temporarily
 ;; let-bound to nil).
 
 ;;; Todo:
@@ -623,9 +623,9 @@ point (where the PPSS is equivalent to nil).")
         (setq cq-syntax-ppss-last nil)
       (setcar cq-syntax-ppss-last nil)))
   ;; Unregister if there's no cache left.  Sadly this doesn't work
-  ;; because `before-change-functions' is temporarily bound to nil here.
+  ;; because `cq-before-change-functions' is temporarily bound to nil here.
   ;; (unless cq-syntax-ppss-cache
-  ;;   (remove-hook 'before-change-functions 'cq-syntax-ppss-flush-cache t))
+  ;;   (remove-hook 'cq-before-change-functions 'cq-syntax-ppss-flush-cache t))
   )
 
 (defvar cq-syntax-ppss-stats
@@ -709,7 +709,7 @@ The match data may be altered through running `cq-syntax-begin-function' (or
 
               ;; Setup the before-change function if necessary.
               (unless (or cq-syntax-ppss-cache cq-syntax-ppss-last)
-                (add-hook 'before-change-functions
+                (add-hook 'cq-before-change-functions
                           'cq-syntax-ppss-flush-cache t t))
 
               ;; Use the best of OLD-POS and CACHE.
