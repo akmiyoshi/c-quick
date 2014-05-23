@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.3
+;; Version: 2.0.4
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -96,14 +96,25 @@
 (defun c-quick-ding ()
   (if c-quick-ding-dings (ding)))
 
-(defun cq-looking-back (arg)
-  (if (fboundp 'looking-back)
-      (looking-back arg)
-    (cond
-     ((bobp) nil)
-     (t (save-excursion
-          (backward-char)
-          (looking-at arg))))))
+(defun cq-looking-back (regexp &optional limit greedy)
+  (let ((start (point))
+        (pos
+         (save-excursion
+           (and (re-search-backward (concat "\\(?:" regexp "\\)\\=") limit t)
+                (point)))))
+    (if (and greedy pos)
+        (save-restriction
+          (narrow-to-region (point-min) start)
+          (while (and (> pos (point-min))
+                      (save-excursion
+                        (goto-char pos)
+                        (backward-char 1)
+                        (looking-at (concat "\\(?:"  regexp "\\)\\'"))))
+            (setq pos (1- pos)))
+          (save-excursion
+            (goto-char pos)
+            (looking-at (concat "\\(?:"  regexp "\\)\\'")))))
+    (not (null pos))))
 
 (defun c-quick-redisplay ()
   (c-quick-recenter)
@@ -395,13 +406,13 @@
 
 (defun c-quick-operate-on-region-or-sexp (op)
   (interactive)
-  (cond
-   ;;((not transient-mark-mode)
-   ;; (error "transient-mark-mode should not be nil."))
-   (t
-    (funcall op
-     (point)
-     (if (region-active-p) (mark) (c-quick-forward-sexp) (point))))))
+  (funcall op
+           (point)
+           (if (region-active-p)
+               (mark)
+             (c-quick-forward-sexp)
+             ;; (activate-region)
+             (point))))
 
 (defun c-quick-copy-region ()
   (interactive)
@@ -414,9 +425,15 @@
   (interactive)
   (c-quick-operate-on-region-or-sexp #'delete-region))
 
+;(defun c-quick-indent-region ()
+;  (interactive)
+;  (c-quick-operate-on-region-or-sexp #'indent-region))
+
 (defun c-quick-indent-region ()
   (interactive)
-  (c-quick-operate-on-region-or-sexp #'indent-region))
+  (c-quick-operate-on-region-or-sexp
+   #'(lambda (beg end)
+       (indent-region beg end nil))))
 
 (defun c-quick-kill-region ()
   (interactive)
@@ -425,18 +442,24 @@
 (defun c-quick-mark-sexp ()
   (interactive)
   (if (eq last-command this-command)
-      (c-quick-forward-sexp)
+      (progn
+        (c-quick-forward-sexp)
+        (and (fboundp 'activate-region) (activate-region)))
     (set-mark (point))
-    (c-quick-forward-sexp)))
+    (c-quick-forward-sexp)
+    (and (fboundp 'activate-region) (activate-region))))
 
 (defun c-quick-mark-defun ()
   (interactive)
   (if (eq last-command this-command)
-      (end-of-defun)
+      (progn
+        (end-of-defun)
+        (and (fboundp 'activate-region) (activate-region)))
     (unless (looking-at "^\\s(")
       (beginning-of-defun))
     (set-mark (point))
-    (end-of-defun)))
+    (end-of-defun)
+    (and (fboundp 'activate-region) (activate-region))))
 
 (defun c-quick-rotate-buffer-for-file ()
   (interactive)
@@ -521,8 +544,9 @@ If FUNC is not the symbol of an advised function, just returns FUNC."
   (interactive "P")
   (let ((active (region-active-p)))
     (exchange-point-and-mark arg)
-    (if (not active)
-        (deactivate-mark))))
+    (when (not active)
+        (and (fboundp 'deactivate-mark) (deactivate-mark))
+        (and (fboundp 'zmacs-deactivate-region) (zmacs-deactivate-region)))))
 
 (provide 'c-quick-2)
 ;;; c-quick-2.el ends here
