@@ -80,13 +80,13 @@
 (defun c-quick-set-mode (arg)
   (if (not arg)
       (progn
-        (global-whitespace-mode 0)
-        (show-paren-mode 0))
-    (global-whitespace-mode 1)
+        (and (fboundp 'global-whitespace-mode) (global-whitespace-mode 0))
+        (and (fboundp 'show-paren-mode) (show-paren-mode 0)))
+    (and (fboundp 'global-whitespace-mode) (global-whitespace-mode 1))
     (setq show-paren-style
           (if c-quick-paren-only 'parenthesis 'expression))
     (setq show-paren-delay 0)
-    (show-paren-mode 1)))
+    (and (fboundp 'show-paren-mode) (show-paren-mode 1))))
 
 (defun c-quick-mode ()
   (and
@@ -95,6 +95,15 @@
 
 (defun c-quick-ding ()
   (if c-quick-ding-dings (ding)))
+
+(defun cq-looking-back (arg)
+  (if (fboundp 'looking-back)
+      (looking-back arg)
+    (cond
+     ((bobp) nil)
+     (t (save-excursion
+          (backward-char)
+          (looking-at arg))))))
 
 (defun c-quick-redisplay ()
   (c-quick-recenter)
@@ -175,12 +184,12 @@
 (defun c-quick-next-line ()
   (if (save-excursion (end-of-line) (eobp))
       (c-quick-ding)
-    (next-line)))
+    (next-line 1)))
 
 (defun c-quick-previous-line ()
   (if (save-excursion (beginning-of-line) (bobp))
       (c-quick-ding)
-    (previous-line)))
+    (previous-line 1)))
 
 (defun c-quick-forward-sexp ()
   (interactive)
@@ -229,24 +238,24 @@
      ((bobp) (c-quick-ding))
      ((c-quick-within-string (point)) (c-quick-backward-within-string))
      ((c-quick-within-comment (point)) (c-quick-backward-within-comment))
-     ((looking-back "\\s(") (c-quick-ding))
-     ((and (looking-back "\\s>")
+     ((cq-looking-back "\\s(") (c-quick-ding))
+     ((and (cq-looking-back "\\s>")
            (save-excursion
              (backward-char)
              (setq comment-begin
                    (c-quick-find-comment-beginning (point)))))
       (goto-char comment-begin)
-      (while (and (looking-back "\\s>")
+      (while (and (cq-looking-back "\\s>")
                   (save-excursion
                     (backward-char)
                     (setq comment-begin
                           (c-quick-find-comment-beginning (point)))))
         (goto-char comment-begin)))
-     ((looking-back "\\s-") (while (looking-back "\\s-") (backward-char)))
-     ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
-     ((looking-back "\n")
+     ((cq-looking-back "\\s-") (while (cq-looking-back "\\s-") (backward-char)))
+     ((cq-looking-back "\\s<") (while (cq-looking-back "\\s<") (backward-char)))
+     ((cq-looking-back "\n")
       (backward-char)
-      (while (and (bolp) (looking-back "\n")
+      (while (and (bolp) (cq-looking-back "\n")
                       (save-excursion (backward-char) (bolp)))
             (backward-char)))
      (t (ignore-errors (backward-sexp))))))
@@ -256,10 +265,10 @@
   (let (comment-begin)
     (cond
      ((bobp) (c-quick-ding))
-     ((looking-back "\\s(") (c-quick-ding))
-     ((looking-back "\\s-") (while (looking-back "\\s-") (backward-char)))
-     ((looking-back "\\s<") (while (looking-back "\\s<") (backward-char)))
-     ((looking-back "\n") nil)
+     ((cq-looking-back "\\s(") (c-quick-ding))
+     ((cq-looking-back "\\s-") (while (cq-looking-back "\\s-") (backward-char)))
+     ((cq-looking-back "\\s<") (while (cq-looking-back "\\s<") (backward-char)))
+     ((cq-looking-back "\n") nil)
      (t (let* ((opoint (point))
                (within-comment (c-quick-within-comment (point)))
                (bol (nth 1 within-comment)))
@@ -338,7 +347,7 @@
        (save-excursion
          (beginning-of-line)
          (and
-          (looking-back "\\s>")
+          (cq-looking-back "\\s>")
           (progn
             (backward-char)
             (c-quick-within-comment (point))))))
@@ -355,7 +364,7 @@
       (if (not parsed)
           nil
         (goto-char (nth 0 parsed))
-        (while (looking-back "\\s-") (backward-char))
+        (while (cq-looking-back "\\s-") (backward-char))
         (point)))))
 
 (defun c-quick-show-info ()
@@ -363,7 +372,7 @@
     (save-excursion
       (cond
        ((c-quick-within-string (point)) nil)
-       ((looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
+       ((cq-looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
         (let ((opoint (point)))
           (c-quick-backward-sexp)
           (c-quick-count-lines opoint (point))))
@@ -387,8 +396,8 @@
 (defun c-quick-operate-on-region-or-sexp (op)
   (interactive)
   (cond
-   ((not transient-mark-mode)
-    (error "transient-mark-mode should not be nil."))
+   ;;((not transient-mark-mode)
+   ;; (error "transient-mark-mode should not be nil."))
    (t
     (funcall op
      (point)
@@ -440,7 +449,7 @@
       (setq buffname (buffer-name currbuff))
       (cond
        ((eq bufforig currbuff) nil)
-       ((minibufferp currbuff) nil)         ;; minibuffer(1)
+       ;; ((minibufferp currbuff) nil)         ;; minibuffer(1)
        ((string-match "^[ ]" buffname) nil) ;; minibuffer(2)
        ((string-match "^[*]" buffname) nil) ;; *scratch*, *Help*, etc
        (t (setq found currbuff))))
