@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.4
+;; Version: 2.0.5
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -129,6 +129,9 @@
       (c-quick-slide-down)
     (c-quick-next-line)
     )
+  (when (eq last-command 'set-mark-command)
+    (setq this-command 'set-mark-command)
+    (and (fboundp 'activate-region) (activate-region)))
   (c-quick-redisplay))
 
 (defun c-quick-up-key ()
@@ -137,6 +140,9 @@
       (c-quick-slide-up)
     (c-quick-previous-line)
     )
+  (when (eq last-command 'set-mark-command)
+    (setq this-command 'set-mark-command)
+    (and (fboundp 'activate-region) (activate-region)))
   (c-quick-redisplay))
 
 (defun c-quick-right-key ()
@@ -144,6 +150,9 @@
   (if (c-quick-mode)
       (c-quick-forward-sexp)
     (c-quick-forward-char))
+  (when (eq last-command 'set-mark-command)
+    (setq this-command 'set-mark-command)
+    (and (fboundp 'activate-region) (activate-region)))
   (c-quick-redisplay))
 
 (defun c-quick-left-key ()
@@ -151,6 +160,9 @@
   (if (c-quick-mode)
       (c-quick-backward-sexp)
     (c-quick-backward-char))
+  (when (eq last-command 'set-mark-command)
+    (setq this-command 'set-mark-command)
+    (and (fboundp 'activate-region) (activate-region)))
   (c-quick-redisplay))
 
 (defun c-quick-right-quick ()
@@ -418,7 +430,6 @@
            (if (region-active-p)
                (mark)
              (c-quick-forward-sexp)
-             ;; (activate-region)
              (point))))
 
 (defun c-quick-copy-region ()
