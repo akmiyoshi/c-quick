@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.6
+;; Version: 2.0.7
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -117,6 +117,13 @@
             (looking-at (concat "\\(?:"  regexp "\\)\\'")))))
     (not (null pos))))
 
+(defun cq-extend-region-for-xemacs ()
+  (if (not (fboundp 'activate-region))
+      nil
+    (when (eq last-command 'set-mark-command)
+      (setq this-command 'set-mark-command)
+      (activate-region))))
+
 (defun c-quick-redisplay ()
   (c-quick-recenter)
   (c-quick-show-info)
@@ -128,9 +135,7 @@
   (if (c-quick-mode)
       (c-quick-slide-down)
     (c-quick-next-line))
-  (when (eq last-command 'set-mark-command)
-    (setq this-command 'set-mark-command)
-    (and (fboundp 'activate-region) (activate-region)))
+  (cq-extend-region-for-xemacs)
   (c-quick-redisplay))
 
 (defun c-quick-up-key ()
@@ -138,9 +143,7 @@
   (if (c-quick-mode)
       (c-quick-slide-up)
     (c-quick-previous-line))
-  (when (eq last-command 'set-mark-command)
-    (setq this-command 'set-mark-command)
-    (and (fboundp 'activate-region) (activate-region)))
+  (cq-extend-region-for-xemacs)
   (c-quick-redisplay))
 
 (defun c-quick-right-key ()
@@ -148,9 +151,7 @@
   (if (c-quick-mode)
       (c-quick-forward-sexp)
     (c-quick-forward-char))
-  (when (eq last-command 'set-mark-command)
-    (setq this-command 'set-mark-command)
-    (and (fboundp 'activate-region) (activate-region)))
+  (cq-extend-region-for-xemacs)
   (c-quick-redisplay))
 
 (defun c-quick-left-key ()
@@ -158,29 +159,31 @@
   (if (c-quick-mode)
       (c-quick-backward-sexp)
     (c-quick-backward-char))
-  (when (eq last-command 'set-mark-command)
-    (setq this-command 'set-mark-command)
-    (and (fboundp 'activate-region) (activate-region)))
+  (cq-extend-region-for-xemacs)
   (c-quick-redisplay))
 
 (defun c-quick-right-quick ()
   (interactive)
   (c-quick-forward-sexp)
+  (cq-extend-region-for-xemacs)
   (c-quick-recenter))
 
 (defun c-quick-left-quick ()
   (interactive)
   (c-quick-backward-sexp)
+  (cq-extend-region-for-xemacs)
   (c-quick-recenter))
 
 (defun c-quick-up-quick ()
   (interactive)
   (beginning-of-defun)
+  (cq-extend-region-for-xemacs)
   (recenter))
 
 (defun c-quick-down-quick ()
   (interactive)
   (end-of-defun)
+  (cq-extend-region-for-xemacs)
   (recenter))
 
 (defun c-quick-slide-down ()
@@ -215,13 +218,17 @@
       (c-quick-ding)
     (previous-line 1)))
 
-(defun c-quick-forward-sexp ()
+(defun c-quick-forward-sexp (&optional recursive)
   (interactive)
   (cond
    ((eobp) (c-quick-ding))
-   ((c-quick-within-string (point)) (c-quick-forward-within-string))
-   ((c-quick-within-comment (point)) (c-quick-forward-within-comment))
+   ((and (not recursive) (c-quick-within-string (point)))
+    (c-quick-forward-within-string))
+   ((and (not recursive) (c-quick-within-comment (point)))
+    (c-quick-forward-within-comment))
    ((looking-at "\\s)") (c-quick-ding))
+   ((and recursive (looking-at "\\s-*\\s<"))
+    (goto-char (match-end 0)))
    ((looking-at "\\s-*\\s<")
     (let ((opoint (point)))
       (forward-line)
@@ -236,32 +243,51 @@
       (when bol?
         (while (and (bolp) (looking-at "\n"))
           (forward-char)))))
-   (t (ignore-errors (forward-sexp)))))
+   (t
+    ;;(ignore-errors (forward-sexp))
+    (condition-case err (forward-sexp) (error (c-quick-ding)))
+    )))
+
+(defun cq-forwar-sexp-with-limit (limit)
+  (let ((opoint (point)))
+    (c-quick-forward-sexp 'recursive)
+    (when (> (point) limit)
+      (c-quick-ding)
+      (goto-char opoint)
+      )
+    )
+  )
 
 (defun c-quick-forward-sexp-1-line ()
-  (cond
-   ((eobp) (c-quick-ding))
-   ((looking-at "\\s)") (c-quick-ding))
-   ((looking-at "\\s-*\\s<+")
-    (goto-char (match-end 0)))
-   ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
-   ((looking-at "\n") nil)
-   (t (let ((opoint (point))
-            (eol (save-excursion (end-of-line) (point))))
-        (condition-case err
-            (forward-sexp)
-          (error (c-quick-ding)))
-        (when (> (point) eol)
-          (goto-char opoint)
-          (c-quick-ding))))))
+  (let ((eol (save-excursion (end-of-line) (point))))
+    (cq-forwar-sexp-with-limit eol)))
 
-(defun c-quick-backward-sexp ()
+;; (defun c-quick-forward-sexp-1-line ()
+;;   (cond
+;;    ((eobp) (c-quick-ding))
+;;    ((looking-at "\\s)") (c-quick-ding))
+;;    ((looking-at "\\s-*\\s<+")
+;;     (goto-char (match-end 0)))
+;;    ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
+;;    ((looking-at "\n") nil)
+;;    (t (let ((opoint (point))
+;;             (eol (save-excursion (end-of-line) (point))))
+;;         (condition-case err
+;;             (forward-sexp)
+;;           (error (c-quick-ding)))
+;;         (when (> (point) eol)
+;;           (goto-char opoint)
+;;           (c-quick-ding))))))
+
+(defun c-quick-backward-sexp (&optional recursive)
   (interactive)
   (let (comment-begin)
     (cond
      ((bobp) (c-quick-ding))
-     ((c-quick-within-string (point)) (c-quick-backward-within-string))
-     ((c-quick-within-comment (point)) (c-quick-backward-within-comment))
+     ((and (not recursive) (c-quick-within-string (point)))
+      (c-quick-backward-within-string))
+     ((and (not recursive) (c-quick-within-comment (point)))
+      (c-quick-backward-within-comment))
      ((cq-looking-back "\\s(") (c-quick-ding))
      ((and (cq-looking-back "\\s>")
            (save-excursion
@@ -284,28 +310,46 @@
       (while (and (bolp) (cq-looking-back "\n")
                       (save-excursion (backward-char) (bolp)))
             (backward-char)))
-     (t (ignore-errors (backward-sexp))))))
+     (t
+      ;; (ignore-errors (backward-sexp))
+      (condition-case err (backward-sexp) (error (c-quick-ding)))
+      ))))
+
+(defun cq-backwar-sexp-with-limit (limit)
+  (let ((opoint (point)))
+    (c-quick-backward-sexp 'recursive)
+    (when (< (point) limit)
+      (c-quick-ding)
+      (goto-char opoint)
+      )
+    )
+  )
 
 (defun c-quick-backward-sexp-1-line ()
-  (interactive)
-  (let (comment-begin)
-    (cond
-     ((bobp) (c-quick-ding))
-     ((cq-looking-back "\\s(") (c-quick-ding))
-     ((cq-looking-back "\\s-")
-      (while (cq-looking-back "\\s-") (backward-char)))
-     ((cq-looking-back "\\s<")
-      (while (cq-looking-back "\\s<") (backward-char)))
-     ((cq-looking-back "\n") nil)
-     (t (let* ((opoint (point))
-               (within-comment (c-quick-within-comment (point)))
-               (bol (nth 1 within-comment)))
-          (condition-case err
-              (backward-sexp)
-            (error (c-quick-ding)))
-          (when (< (point) bol)
-            (goto-char opoint)
-            (c-quick-ding)))))))
+  (let* ((within-comment (c-quick-within-comment (point)))
+         (bol (nth 1 within-comment)))
+    (cq-backwar-sexp-with-limit bol)))
+
+;; (defun c-quick-backward-sexp-1-line ()
+;;   (interactive)
+;;   (let (comment-begin)
+;;     (cond
+;;      ((bobp) (c-quick-ding))
+;;      ((cq-looking-back "\\s(") (c-quick-ding))
+;;      ((cq-looking-back "\\s-")
+;;       (while (cq-looking-back "\\s-") (backward-char)))
+;;      ((cq-looking-back "\\s<")
+;;       (while (cq-looking-back "\\s<") (backward-char)))
+;;      ((cq-looking-back "\n") nil)
+;;      (t (let* ((opoint (point))
+;;                (within-comment (c-quick-within-comment (point)))
+;;                (bol (nth 1 within-comment)))
+;;           (condition-case err
+;;               (backward-sexp)
+;;             (error (c-quick-ding)))
+;;           (when (< (point) bol)
+;;             (goto-char opoint)
+;;             (c-quick-ding)))))))
 
 (defun c-quick-within-string (pos)
   (save-excursion
