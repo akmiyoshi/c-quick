@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.5
+;; Version: 2.0.6
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -127,8 +127,7 @@
   (interactive)
   (if (c-quick-mode)
       (c-quick-slide-down)
-    (c-quick-next-line)
-    )
+    (c-quick-next-line))
   (when (eq last-command 'set-mark-command)
     (setq this-command 'set-mark-command)
     (and (fboundp 'activate-region) (activate-region)))
@@ -138,8 +137,7 @@
   (interactive)
   (if (c-quick-mode)
       (c-quick-slide-up)
-    (c-quick-previous-line)
-    )
+    (c-quick-previous-line))
   (when (eq last-command 'set-mark-command)
     (setq this-command 'set-mark-command)
     (and (fboundp 'activate-region) (activate-region)))
