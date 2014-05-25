@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.10
+;; Version: 2.0.11
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -285,51 +285,41 @@
       (while (and (bolp) (cq-looking-back "\n")
                   (save-excursion (backward-char) (bolp)))
         (backward-char)))
-     (t
-      (condition-case err (backward-sexp) (error (cq-ding)))
-      ))
+     (t (condition-case err (backward-sexp) (error (cq-ding)))))
     (when (and limit (< (point) limit))
       (cq-ding)
       (goto-char opoint))))
 
-(defun cq-backward-sexp-1-line ()
-  (let* ((within-comment (cq-within-comment (point)))
-         (bol (nth 1 within-comment)))
-    ;; (cq-backwar-sexp-with-limit bol)
-    (cq-backward-sexp bol)
-    ))
+;; (defun cq-within-string (pos)
+;;   (save-excursion
+;;     (goto-char pos)
+;;     (let ((parsed (cq-syntax-ppss)))
+;;       (if (nth 3 parsed) (nth 8 parsed) nil))))
 
 (defun cq-within-string (pos)
   (save-excursion
     (goto-char pos)
-    (let ((parsed (cq-syntax-ppss)))
-      (if (nth 3 parsed) (nth 8 parsed) nil))))
+    (let ((ppss (cq-syntax-ppss))
+          beg end)
+      (if (not (nth 3 ppss))
+          nil
+        (setq beg (nth 8 ppss))
+        (goto-char beg)
+        (forward-sexp)
+        (setq end (point))
+        (list (1+ beg) (1- end))))))
 
 (defun cq-forward-within-string ()
-  (let ((opoint (point))
-        (parsed (cq-syntax-ppss))
-        beg end)
-    (save-excursion
-      (setq beg (nth 8 parsed))
-      (goto-char beg)
-      (forward-sexp)
-      (setq end (point)))
-    (if (>= (point) (1- end))
+  (let ((parsed (cq-within-string (point))))
+    (if (>= (point) (nth 1 parsed))
         (cq-ding)
-      (forward-char))))
+      (cq-forward-sexp (nth 1 parsed)))))
 
 (defun cq-backward-within-string ()
-  (let ((opoint (point))
-        (parsed (cq-syntax-ppss))
-        beg end)
-    (save-excursion
-      (setq beg (nth 8 parsed))
-      (goto-char beg)
-      (forward-sexp)
-      (setq end (point)))
-    (if (<= (point) (1+ beg))
+  (let ((parsed (cq-within-string (point))))
+    (if (<= (point) (nth 0 parsed))
         (cq-ding)
-      (backward-char))))
+      (cq-backward-sexp (nth 0 parsed)))))
 
 (defun cq-within-comment (pos)
   (save-excursion
