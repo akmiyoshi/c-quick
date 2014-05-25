@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.8
+;; Version: 2.0.9
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,81 +21,82 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(require 'find-func)
 (require 'etags)
+(require 'find-func)
 
 
-(global-set-key (kbd "<down>")     'c-quick-down-key)
-(global-set-key (kbd "<up>")       'c-quick-up-key)
-(global-set-key (kbd "<right>")    'c-quick-right-key)
-(global-set-key (kbd "<left>")     'c-quick-left-key)
-(global-set-key (kbd "C-z")        'c-quick-toggle-mode)
-(global-set-key (kbd "M-w")        'c-quick-copy-region)
-(global-set-key (kbd "C-w")        'c-quick-kill-region)
-(global-set-key (kbd "C-M-\\")     'c-quick-indent-region)
-(global-set-key (kbd "<C-delete>") 'c-quick-delete-region)
-(global-set-key (kbd "C-M-SPC")    'c-quick-mark-sexp)
-(global-set-key (kbd "C-M-@")      'c-quick-mark-sexp)
-(global-set-key (kbd "C-M-a")      'c-quick-beginning-of-defun)
-(global-set-key (kbd "C-M-e")      'c-quick-end-of-defun)
-(global-set-key (kbd "C-M-h")      'c-quick-mark-defun)
-(global-set-key (kbd "<C-tab>")    'c-quick-rotate-buffer-for-file)
+(global-set-key (kbd "<down>")     'cq-down-key)
+(global-set-key (kbd "<up>")       'cq-up-key)
+(global-set-key (kbd "<right>")    'cq-right-key)
+(global-set-key (kbd "<left>")     'cq-left-key)
+(global-set-key (kbd "C-z")        'cq-toggle-mode)
+(global-set-key (kbd "M-w")        'cq-copy-region)
+(global-set-key (kbd "C-w")        'cq-kill-region)
+(global-set-key (kbd "C-M-\\")     'cq-indent-region)
+(global-set-key (kbd "<C-delete>") 'cq-delete-region)
+(global-set-key (kbd "C-M-SPC")    'cq-mark-sexp)
+(global-set-key (kbd "C-M-@")      'cq-mark-sexp)
+(global-set-key (kbd "C-M-a")      'cq-beginning-of-defun)
+(global-set-key (kbd "C-M-e")      'cq-end-of-defun)
+(global-set-key (kbd "C-M-h")      'cq-mark-defun)
+(global-set-key (kbd "<C-tab>")    'cq-rotate-buffer-for-file)
 
-(global-set-key (kbd "<C-right>")  'c-quick-right-quick)
-(global-set-key (kbd "<C-left>")   'c-quick-left-quick)
-(global-set-key (kbd "<C-up>")     'c-quick-up-quick)
-(global-set-key (kbd "<C-down>")   'c-quick-down-quick)
+(global-set-key (kbd "<C-right>")  'cq-right-quick)
+(global-set-key (kbd "<C-left>")   'cq-left-quick)
+(global-set-key (kbd "<C-up>")     'cq-up-quick)
+(global-set-key (kbd "<C-down>")   'cq-down-quick)
 
-(global-set-key (kbd "C-M-.")      'c-quick-jump-to-function-or-variable)
-(global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
+(global-set-key (kbd "C-M-.")      'cq-jump-to-function-or-variable)
+(global-set-key (kbd "C-x C-x")    'cq-exchange-point-and-mark)
 
 ;;;; Customization
 
 (defgroup c-quick nil
   "c-quick."
   :group 'c-quick
-  :prefix "c-quick-")
+  :prefix "cq-")
 
-(defcustom c-quick-ding-dings t ""
-  :group 'c-quick
+(defcustom cq-ding-dings t ""
+  :group 'cq
   :type  'boolean)
 
-(defcustom c-quick-paren-only t ""
-  :group 'c-quick
+(defcustom cq-paren-only t ""
+  :group 'cq
   :type  'boolean)
 
 ;;;; Internal Variables
 
-(defvar _c-quick-mode_is_on_ nil)
+(defvar _cq-mode_is_on_ nil)
 
 ;;;; Functions
 
-(defun c-quick-toggle-mode ()
+(defun cq-toggle-mode ()
   (interactive)
-  (setq _c-quick-mode_is_on_ (not _c-quick-mode_is_on_))
-  (c-quick-set-mode _c-quick-mode_is_on_)
+  (setq _cq-mode_is_on_ (not _cq-mode_is_on_))
+  (cq-set-mode _cq-mode_is_on_)
   (cond
-   (_c-quick-mode_is_on_ (message "c-quick-mode is ON"))
-   (t (message "c-quick-mode is OFF"))))
+   (_cq-mode_is_on_ (message "c-quick-mode is ON"))
+   (t (message "c-quick-mode is OFF")))
+  (cq-extend-region-for-xemacs))
 
-(defun c-quick-set-mode (arg)
+(defun cq-set-mode (arg)
   (if (not arg)
       (progn
         (and (fboundp 'global-whitespace-mode) (global-whitespace-mode 0))
         (and (fboundp 'show-paren-mode) (show-paren-mode 0)))
     (and (fboundp 'global-whitespace-mode) (global-whitespace-mode 1))
     (setq show-paren-style
-          (if c-quick-paren-only 'parenthesis 'expression))
+          (if cq-paren-only 'parenthesis 'expression))
     (setq show-paren-delay 0)
     (and (fboundp 'show-paren-mode) (show-paren-mode 1))))
 
-(defun c-quick-mode ()
+(defun cq-mode ()
   (and
    (not (window-minibuffer-p (selected-window)))
-   _c-quick-mode_is_on_))
+   _cq-mode_is_on_))
 
-(defun c-quick-ding ()
-  (if c-quick-ding-dings (ding)))
+(defun cq-ding ()
+  (if cq-ding-dings (ding)))
 
 (defun cq-looking-back (regexp &optional limit greedy)
   (let ((start (point))
@@ -117,6 +118,9 @@
             (looking-at (concat "\\(?:"  regexp "\\)\\'")))))
     (not (null pos))))
 
+(defun cq-activate-region-for-xemacs ()
+  (and (fboundp 'activate-region) (activate-region)))
+
 (defun cq-extend-region-for-xemacs ()
   (if (not (fboundp 'activate-region))
       nil
@@ -124,109 +128,109 @@
       (setq this-command 'set-mark-command)
       (activate-region))))
 
-(defun c-quick-redisplay ()
-  (c-quick-recenter)
-  (c-quick-show-info)
+(defun cq-redisplay ()
+  (cq-recenter)
+  (cq-show-info)
   (force-mode-line-update)
   (when (input-pending-p) (discard-input)))
 
-(defun c-quick-down-key ()
+(defun cq-down-key ()
   (interactive)
-  (if (c-quick-mode)
-      (c-quick-slide-down)
-    (c-quick-next-line))
+  (if (cq-mode)
+      (cq-slide-down)
+    (cq-next-line))
   (cq-extend-region-for-xemacs)
-  (c-quick-redisplay))
+  (cq-redisplay))
 
-(defun c-quick-up-key ()
+(defun cq-up-key ()
   (interactive)
-  (if (c-quick-mode)
-      (c-quick-slide-up)
-    (c-quick-previous-line))
+  (if (cq-mode)
+      (cq-slide-up)
+    (cq-previous-line))
   (cq-extend-region-for-xemacs)
-  (c-quick-redisplay))
+  (cq-redisplay))
 
-(defun c-quick-right-key ()
+(defun cq-right-key ()
   (interactive)
-  (if (c-quick-mode)
-      (c-quick-forward-sexp)
-    (c-quick-forward-char))
+  (if (cq-mode)
+      (cq-forward-sexp)
+    (cq-forward-char))
   (cq-extend-region-for-xemacs)
-  (c-quick-redisplay))
+  (cq-redisplay))
 
-(defun c-quick-left-key ()
+(defun cq-left-key ()
   (interactive)
-  (if (c-quick-mode)
-      (c-quick-backward-sexp)
-    (c-quick-backward-char))
+  (if (cq-mode)
+      (cq-backward-sexp)
+    (cq-backward-char))
   (cq-extend-region-for-xemacs)
-  (c-quick-redisplay))
+  (cq-redisplay))
 
-(defun c-quick-right-quick ()
+(defun cq-right-quick ()
   (interactive)
-  (c-quick-forward-sexp)
+  (cq-forward-sexp)
   (cq-extend-region-for-xemacs)
-  (c-quick-recenter))
+  (cq-recenter))
 
-(defun c-quick-left-quick ()
+(defun cq-left-quick ()
   (interactive)
-  (c-quick-backward-sexp)
+  (cq-backward-sexp)
   (cq-extend-region-for-xemacs)
-  (c-quick-recenter))
+  (cq-recenter))
 
-(defun c-quick-up-quick ()
+(defun cq-up-quick ()
   (interactive)
   (beginning-of-defun)
   (cq-extend-region-for-xemacs)
   (recenter))
 
-(defun c-quick-down-quick ()
+(defun cq-down-quick ()
   (interactive)
   (end-of-defun)
   (cq-extend-region-for-xemacs)
   (recenter))
 
-(defun c-quick-slide-down ()
+(defun cq-slide-down ()
   (if (not (bolp))
       (forward-char)
-    (if (eobp) (c-quick-ding) (forward-line 1))))
+    (if (eobp) (cq-ding) (forward-line 1))))
 
-(defun c-quick-slide-up ()
+(defun cq-slide-up ()
   (if (not (bolp))
       (backward-char)
-    (if (bobp) (c-quick-ding) (forward-line -1))))
+    (if (bobp) (cq-ding) (forward-line -1))))
 
-(defun c-quick-forward-char ()
+(defun cq-forward-char ()
   (if (eobp)
-      (c-quick-ding)
+      (cq-ding)
     (forward-char)))
 
-(defun c-quick-backward-char ()
+(defun cq-backward-char ()
   (if (bobp)
-      (c-quick-ding)
+      (cq-ding)
     (backward-char)))
 
-(defun c-quick-next-line ()
+(defun cq-next-line ()
   (setq this-command 'next-line)
   (if (save-excursion (end-of-line) (eobp))
-      (c-quick-ding)
+      (cq-ding)
     (next-line 1)))
 
-(defun c-quick-previous-line ()
+(defun cq-previous-line ()
   (setq this-command 'previous-line)
   (if (save-excursion (beginning-of-line) (bobp))
-      (c-quick-ding)
+      (cq-ding)
     (previous-line 1)))
 
-(defun c-quick-forward-sexp (&optional recursive)
+(defun cq-forward-sexp (&optional recursive)
   (interactive)
   (cond
-   ((eobp) (c-quick-ding))
-   ((and (not recursive) (c-quick-within-string (point)))
-    (c-quick-forward-within-string))
-   ((and (not recursive) (c-quick-within-comment (point)))
-    (c-quick-forward-within-comment))
-   ;; ((looking-at "\\s)") (c-quick-ding))
+   ((eobp) (cq-ding))
+   ((and (not recursive) (cq-within-string (point)))
+    (cq-forward-within-string))
+   ((and (not recursive) (cq-within-comment (point)))
+    (cq-forward-within-comment))
+   ;; ((looking-at "\\s)") (cq-ding))
    ((and recursive (looking-at "\\s-*\\s<"))
     (goto-char (match-end 0)))
    ((looking-at "\\s-*\\s<")
@@ -245,27 +249,27 @@
           (forward-char)))))
    (t
     ;;(ignore-errors (forward-sexp))
-    (condition-case err (forward-sexp) (error (c-quick-ding)))
+    (condition-case err (forward-sexp) (error (cq-ding)))
     )))
 
 (defun cq-forwar-sexp-with-limit (limit)
   (let ((opoint (point)))
-    (c-quick-forward-sexp 'recursive)
+    (cq-forward-sexp 'recursive)
     (when (> (point) limit)
-      (c-quick-ding)
+      (cq-ding)
       (goto-char opoint)
       )
     )
   )
 
-(defun c-quick-forward-sexp-1-line ()
+(defun cq-forward-sexp-1-line ()
   (let ((eol (save-excursion (end-of-line) (point))))
     (cq-forwar-sexp-with-limit eol)))
 
-;; (defun c-quick-forward-sexp-1-line ()
+;; (defun cq-forward-sexp-1-line ()
 ;;   (cond
-;;    ((eobp) (c-quick-ding))
-;;    ((looking-at "\\s)") (c-quick-ding))
+;;    ((eobp) (cq-ding))
+;;    ((looking-at "\\s)") (cq-ding))
 ;;    ((looking-at "\\s-*\\s<+")
 ;;     (goto-char (match-end 0)))
 ;;    ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
@@ -274,32 +278,32 @@
 ;;             (eol (save-excursion (end-of-line) (point))))
 ;;         (condition-case err
 ;;             (forward-sexp)
-;;           (error (c-quick-ding)))
+;;           (error (cq-ding)))
 ;;         (when (> (point) eol)
 ;;           (goto-char opoint)
-;;           (c-quick-ding))))))
+;;           (cq-ding))))))
 
-(defun c-quick-backward-sexp (&optional recursive)
+(defun cq-backward-sexp (&optional recursive)
   (interactive)
   (let (comment-begin)
     (cond
-     ((bobp) (c-quick-ding))
-     ((and (not recursive) (c-quick-within-string (point)))
-      (c-quick-backward-within-string))
-     ((and (not recursive) (c-quick-within-comment (point)))
-      (c-quick-backward-within-comment))
-     ;; ((cq-looking-back "\\s(") (c-quick-ding))
+     ((bobp) (cq-ding))
+     ((and (not recursive) (cq-within-string (point)))
+      (cq-backward-within-string))
+     ((and (not recursive) (cq-within-comment (point)))
+      (cq-backward-within-comment))
+     ;; ((cq-looking-back "\\s(") (cq-ding))
      ((and (cq-looking-back "\\s>")
            (save-excursion
              (backward-char)
              (setq comment-begin
-                   (c-quick-find-comment-beginning (point)))))
+                   (cq-find-comment-beginning (point)))))
       (goto-char comment-begin)
       (while (and (cq-looking-back "\\s>")
                   (save-excursion
                     (backward-char)
                     (setq comment-begin
-                          (c-quick-find-comment-beginning (point)))))
+                          (cq-find-comment-beginning (point)))))
         (goto-char comment-begin)))
      ((cq-looking-back "\\s-")
       (while (cq-looking-back "\\s-") (backward-char)))
@@ -312,52 +316,52 @@
             (backward-char)))
      (t
       ;; (ignore-errors (backward-sexp))
-      (condition-case err (backward-sexp) (error (c-quick-ding)))
+      (condition-case err (backward-sexp) (error (cq-ding)))
       ))))
 
 (defun cq-backwar-sexp-with-limit (limit)
   (let ((opoint (point)))
-    (c-quick-backward-sexp 'recursive)
+    (cq-backward-sexp 'recursive)
     (when (< (point) limit)
-      (c-quick-ding)
+      (cq-ding)
       (goto-char opoint)
       )
     )
   )
 
-(defun c-quick-backward-sexp-1-line ()
-  (let* ((within-comment (c-quick-within-comment (point)))
+(defun cq-backward-sexp-1-line ()
+  (let* ((within-comment (cq-within-comment (point)))
          (bol (nth 1 within-comment)))
     (cq-backwar-sexp-with-limit bol)))
 
-;; (defun c-quick-backward-sexp-1-line ()
+;; (defun cq-backward-sexp-1-line ()
 ;;   (interactive)
 ;;   (let (comment-begin)
 ;;     (cond
-;;      ((bobp) (c-quick-ding))
-;;      ((cq-looking-back "\\s(") (c-quick-ding))
+;;      ((bobp) (cq-ding))
+;;      ((cq-looking-back "\\s(") (cq-ding))
 ;;      ((cq-looking-back "\\s-")
 ;;       (while (cq-looking-back "\\s-") (backward-char)))
 ;;      ((cq-looking-back "\\s<")
 ;;       (while (cq-looking-back "\\s<") (backward-char)))
 ;;      ((cq-looking-back "\n") nil)
 ;;      (t (let* ((opoint (point))
-;;                (within-comment (c-quick-within-comment (point)))
+;;                (within-comment (cq-within-comment (point)))
 ;;                (bol (nth 1 within-comment)))
 ;;           (condition-case err
 ;;               (backward-sexp)
-;;             (error (c-quick-ding)))
+;;             (error (cq-ding)))
 ;;           (when (< (point) bol)
 ;;             (goto-char opoint)
-;;             (c-quick-ding)))))))
+;;             (cq-ding)))))))
 
-(defun c-quick-within-string (pos)
+(defun cq-within-string (pos)
   (save-excursion
     (goto-char pos)
     (let ((parsed (cq-syntax-ppss)))
       (if (nth 3 parsed) (nth 8 parsed) nil))))
 
-(defun c-quick-forward-within-string ()
+(defun cq-forward-within-string ()
   (let ((opoint (point))
         (parsed (cq-syntax-ppss))
         beg end)
@@ -367,10 +371,10 @@
       (forward-sexp)
       (setq end (point)))
     (if (>= (point) (1- end))
-        (c-quick-ding)
+        (cq-ding)
       (forward-char))))
 
-(defun c-quick-backward-within-string ()
+(defun cq-backward-within-string ()
   (let ((opoint (point))
         (parsed (cq-syntax-ppss))
         beg end)
@@ -380,10 +384,10 @@
       (forward-sexp)
       (setq end (point)))
     (if (<= (point) (1+ beg))
-        (c-quick-ding)
+        (cq-ding)
       (backward-char))))
 
-(defun c-quick-within-comment (pos)
+(defun cq-within-comment (pos)
   (save-excursion
     (goto-char pos)
     (let ((parsed (cq-syntax-ppss)))
@@ -396,7 +400,7 @@
               (point)
               (progn (end-of-line) (point)))))))
 
-(defun c-quick-forward-within-comment ()
+(defun cq-forward-within-comment ()
   (let (within-comment)
     (cond
      ((and
@@ -405,14 +409,14 @@
          (forward-line)
          (end-of-line)
          (setq within-comment
-               (c-quick-within-comment (point)))))
+               (cq-within-comment (point)))))
       (goto-char (nth 1 within-comment)))
      ((looking-at "\\s>")
-      (c-quick-ding))
-     (t (c-quick-forward-sexp-1-line)))))
+      (cq-ding))
+     (t (cq-forward-sexp-1-line)))))
 
-(defun c-quick-backward-within-comment ()
-  (let ((within-comment (c-quick-within-comment (point))))
+(defun cq-backward-within-comment ()
+  (let ((within-comment (cq-within-comment (point))))
     (cond
      ((and
        (<= (point) (nth 1 within-comment))
@@ -422,102 +426,102 @@
           (cq-looking-back "\\s>")
           (progn
             (backward-char)
-            (c-quick-within-comment (point))))))
+            (cq-within-comment (point))))))
       (beginning-of-line)
       (backward-char))
      ((<= (point) (nth 1 within-comment))
-      (c-quick-ding))
-     (t (c-quick-backward-sexp-1-line)))))
+      (cq-ding))
+     (t (cq-backward-sexp-1-line)))))
 
-(defun c-quick-find-comment-beginning (eol)
+(defun cq-find-comment-beginning (eol)
   (save-excursion
     (goto-char eol)
-    (let ((parsed (c-quick-within-comment (point))))
+    (let ((parsed (cq-within-comment (point))))
       (if (not parsed)
           nil
         (goto-char (nth 0 parsed))
         (while (cq-looking-back "\\s-") (backward-char))
         (point)))))
 
-(defun c-quick-show-info ()
-  (when (and (c-quick-mode) (not (c-quick-within-comment (point))))
+(defun cq-show-info ()
+  (when (and (cq-mode) (not (cq-within-comment (point))))
     (save-excursion
       (cond
-       ((c-quick-within-string (point)) nil)
+       ((cq-within-string (point)) nil)
        ((cq-looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
         (let ((opoint (point)))
-          (c-quick-backward-sexp)
-          (c-quick-count-lines opoint (point))))
+          (cq-backward-sexp)
+          (cq-count-lines opoint (point))))
        ((looking-at
          "\\(\\s-*\\)\\(\\sw\\|\\s_\\|\\s(\\|\\s<\\|\\s\"\\|\\s'\\)")
         (goto-char (match-end 1))
         (let ((opoint (point)))
-          (c-quick-forward-sexp)
-          (c-quick-count-lines opoint (point))))))))
+          (cq-forward-sexp)
+          (cq-count-lines opoint (point))))))))
 
-(defun c-quick-count-lines (start end)
+(defun cq-count-lines (start end)
   (let ((lines (count-lines start end)))
     (if (= lines 1) (message "1 line.") (message "%s lines." lines))))
 
-(defun c-quick-recenter ()
+(defun cq-recenter ()
   (cond
    ((pos-visible-in-window-p (point)) nil)
    ((< (point) (window-start)) (recenter 0))
    (t (recenter -1))))
 
-(defun c-quick-operate-on-region-or-sexp (op)
+(defun cq-operate-on-region-or-sexp (op)
   (interactive)
   (funcall op
            (point)
            (if (region-active-p)
                (mark)
-             (c-quick-forward-sexp)
+             (cq-forward-sexp)
              (point))))
 
-(defun c-quick-copy-region ()
+(defun cq-copy-region ()
   (interactive)
-  (c-quick-operate-on-region-or-sexp
+  (cq-operate-on-region-or-sexp
    #'(lambda (beg end)
        (kill-ring-save beg end)
        (setq this-command 'kill-region))))
 
-(defun c-quick-delete-region ()
+(defun cq-delete-region ()
   (interactive)
-  (c-quick-operate-on-region-or-sexp #'delete-region))
+  (cq-operate-on-region-or-sexp #'delete-region))
 
-(defun c-quick-indent-region ()
+(defun cq-indent-region ()
   (interactive)
-  (c-quick-operate-on-region-or-sexp
+  (cq-operate-on-region-or-sexp
    #'(lambda (beg end)
        (indent-region beg end nil))))
 
-(defun c-quick-kill-region ()
+(defun cq-kill-region ()
   (interactive)
-  (c-quick-operate-on-region-or-sexp #'kill-region))
+  (cq-operate-on-region-or-sexp #'kill-region))
 
-(defun c-quick-mark-sexp ()
+(defun cq-mark-sexp ()
   (interactive)
   (if (eq last-command this-command)
       (progn
-        (c-quick-forward-sexp)
-        (and (fboundp 'activate-region) (activate-region)))
+        (cq-forward-sexp)
+        (cq-activate-region-for-xemacs))
     (set-mark (point))
-    (c-quick-forward-sexp)
-    (and (fboundp 'activate-region) (activate-region))))
+    (cq-forward-sexp)
+    (cq-activate-region-for-xemacs)))
 
-(defun c-quick-mark-defun ()
+(defun cq-mark-defun ()
   (interactive)
   (if (eq last-command this-command)
       (progn
         (end-of-defun)
-        (and (fboundp 'activate-region) (activate-region)))
+        (cq-activate-region-for-xemacs))
     (unless (looking-at "^\\s(")
       (beginning-of-defun))
     (set-mark (point))
     (end-of-defun)
-    (and (fboundp 'activate-region) (activate-region))))
+    (cq-activate-region-for-xemacs)))
 
-(defun c-quick-rotate-buffer-for-file ()
+(defun cq-rotate-buffer-for-file ()
   (interactive)
   (let ((bufflist (buffer-list))
         (bufforig (current-buffer))
@@ -539,7 +543,7 @@
 
 ;;;; Testing
 
-(defun c-quick-jump-to-function-or-variable ()
+(defun cq-jump-to-function-or-variable ()
   (interactive)
   (let* ((func-name (find-tag-default))
          (interned (intern func-name)))
@@ -571,7 +575,7 @@ If FUNC is not the symbol of an advised function, just returns FUNC."
              (and (fboundp ofunc) ofunc)))
       func))
 
-(defun c-quick-exchange-point-and-mark (arg)
+(defun cq-exchange-point-and-mark (arg)
   (interactive "P")
   (let ((active (region-active-p)))
     (exchange-point-and-mark arg)
