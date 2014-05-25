@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.11
+;; Version: 2.0.12
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -245,15 +245,10 @@
         (when bol?
           (while (and (bolp) (looking-at "\n"))
             (forward-char)))))
-     (t
-      (condition-case err (forward-sexp) (error (cq-ding)))
-      ))
+     (t (condition-case err (forward-sexp) (error (cq-ding)))))
     (when (and limit (> (point) limit))
       (cq-ding)
-      (goto-char opoint)
-      )
-    )
-  )
+      (goto-char opoint))))
 
 (defun cq-backward-sexp (&optional limit)
   (interactive)
@@ -290,12 +285,6 @@
       (cq-ding)
       (goto-char opoint))))
 
-;; (defun cq-within-string (pos)
-;;   (save-excursion
-;;     (goto-char pos)
-;;     (let ((parsed (cq-syntax-ppss)))
-;;       (if (nth 3 parsed) (nth 8 parsed) nil))))
-
 (defun cq-within-string (pos)
   (save-excursion
     (goto-char pos)
@@ -324,13 +313,13 @@
 (defun cq-within-comment (pos)
   (save-excursion
     (goto-char pos)
-    (let ((parsed (cq-syntax-ppss)))
-      (if (not (nth 4 parsed))
+    (let ((ppss (cq-syntax-ppss)))
+      (if (not (nth 4 ppss))
           nil
-        (goto-char (nth 8 parsed))
+        (goto-char (nth 8 ppss))
         (while (looking-at "\\s<")
           (forward-char))
-        (list (nth 8 parsed)
+        (list (nth 8 ppss)
               (point)
               (progn (end-of-line) (point)))))))
 
