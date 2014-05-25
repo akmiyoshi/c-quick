@@ -444,18 +444,19 @@
 (defun cq-show-info ()
   (when (and (cq-mode) (not (cq-within-comment (point))))
     (save-excursion
-      (cond
-       ((cq-within-string (point)) nil)
-       ((cq-looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
-        (let ((opoint (point)))
-          (cq-backward-sexp)
-          (cq-count-lines opoint (point))))
-       ((looking-at
-         "\\(\\s-*\\)\\(\\sw\\|\\s_\\|\\s(\\|\\s<\\|\\s\"\\|\\s'\\)")
-        (goto-char (match-end 1))
-        (let ((opoint (point)))
-          (cq-forward-sexp)
-          (cq-count-lines opoint (point))))))))
+      (let ((cq-ding-dings nil))
+        (cond
+         ((cq-within-string (point)) nil)
+         ((cq-looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
+          (let ((opoint (point)))
+            (cq-backward-sexp)
+            (cq-count-lines opoint (point))))
+         ((looking-at
+           "\\(\\s-*\\)\\(\\sw\\|\\s_\\|\\s(\\|\\s<\\|\\s\"\\|\\s'\\)")
+          (goto-char (match-end 1))
+          (let ((opoint (point)))
+            (cq-forward-sexp)
+            (cq-count-lines opoint (point)))))))))
 
 (defun cq-count-lines (start end)
   (let ((lines (count-lines start end)))
