@@ -264,23 +264,6 @@
   (let ((eol (save-excursion (end-of-line) (point))))
     (cq-forwar-sexp-with-limit eol)))
 
-;; (defun cq-forward-sexp-1-line ()
-;;   (cond
-;;    ((eobp) (cq-ding))
-;;    ((looking-at "\\s)") (cq-ding))
-;;    ((looking-at "\\s-*\\s<+")
-;;     (goto-char (match-end 0)))
-;;    ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
-;;    ((looking-at "\n") nil)
-;;    (t (let ((opoint (point))
-;;             (eol (save-excursion (end-of-line) (point))))
-;;         (condition-case err
-;;             (forward-sexp)
-;;           (error (cq-ding)))
-;;         (when (> (point) eol)
-;;           (goto-char opoint)
-;;           (cq-ding))))))
-
 (defun cq-backward-sexp (&optional recursive)
   (interactive)
   (let (comment-begin)
@@ -331,27 +314,6 @@
   (let* ((within-comment (cq-within-comment (point)))
          (bol (nth 1 within-comment)))
     (cq-backwar-sexp-with-limit bol)))
-
-;; (defun cq-backward-sexp-1-line ()
-;;   (interactive)
-;;   (let (comment-begin)
-;;     (cond
-;;      ((bobp) (cq-ding))
-;;      ((cq-looking-back "\\s(") (cq-ding))
-;;      ((cq-looking-back "\\s-")
-;;       (while (cq-looking-back "\\s-") (backward-char)))
-;;      ((cq-looking-back "\\s<")
-;;       (while (cq-looking-back "\\s<") (backward-char)))
-;;      ((cq-looking-back "\n") nil)
-;;      (t (let* ((opoint (point))
-;;                (within-comment (cq-within-comment (point)))
-;;                (bol (nth 1 within-comment)))
-;;           (condition-case err
-;;               (backward-sexp)
-;;             (error (cq-ding)))
-;;           (when (< (point) bol)
-;;             (goto-char opoint)
-;;             (cq-ding)))))))
 
 (defun cq-within-string (pos)
   (save-excursion
