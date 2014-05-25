@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.9
+;; Version: 2.0.10
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -122,11 +122,9 @@
   (and (fboundp 'activate-region) (activate-region)))
 
 (defun cq-extend-region-for-xemacs ()
-  (if (not (fboundp 'activate-region))
-      nil
-    (when (eq last-command 'set-mark-command)
-      (setq this-command 'set-mark-command)
-      (activate-region))))
+  (and (fboundp 'activate-region)
+       (region-active-p)
+       (activate-region)))
 
 (defun cq-redisplay ()
   (cq-recenter)
