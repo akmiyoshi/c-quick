@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.7
+;; Version: 2.0.8
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -226,7 +226,7 @@
     (c-quick-forward-within-string))
    ((and (not recursive) (c-quick-within-comment (point)))
     (c-quick-forward-within-comment))
-   ((looking-at "\\s)") (c-quick-ding))
+   ;; ((looking-at "\\s)") (c-quick-ding))
    ((and recursive (looking-at "\\s-*\\s<"))
     (goto-char (match-end 0)))
    ((looking-at "\\s-*\\s<")
@@ -288,7 +288,7 @@
       (c-quick-backward-within-string))
      ((and (not recursive) (c-quick-within-comment (point)))
       (c-quick-backward-within-comment))
-     ((cq-looking-back "\\s(") (c-quick-ding))
+     ;; ((cq-looking-back "\\s(") (c-quick-ding))
      ((and (cq-looking-back "\\s>")
            (save-excursion
              (backward-char)
@@ -545,11 +545,13 @@
          (interned (intern func-name)))
     (cond
      ((cq-built-in-function-p interned)
-      (error "%s is a built-in function" interned))
+      (describe-function interned))
      ((fboundp interned)
       (find-function interned))
      ((user-variable-p interned)
       (find-variable interned))
+     ((boundp interned)
+      (describe-variable interned))
      (t (error "%s is not a lisp function nor a user variable" interned)))))
 
 (defun cq-built-in-function-p (symbol)
