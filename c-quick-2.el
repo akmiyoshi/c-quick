@@ -848,7 +848,6 @@ The match data may be altered through running `cq-syntax-begin-function' (or
        ;; a nil state.
        (parse-partial-sexp (point-min) pos)))))
 
-;; (provide 'syntax)
 
 (provide 'c-quick-2)
 ;;; c-quick-2.el ends here
