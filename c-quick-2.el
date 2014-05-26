@@ -73,32 +73,30 @@
 
 (setq cq-syntax-controller-alist nil)
 
-(defclass cq-c-syntax-for-lisp () ())
-(defclass cq-c-syntax-for-javascript () ())
-
-;; (setq cq-syntax-default (make-instance 'cq-c-syntax-for-lisp))
+(defclass <cq-c-syntax-for-lisp> () ())
+(defclass <cq-c-syntax-for-javascript> () ())
 
 (add-to-list 'cq-syntax-controller-alist
              (list 'emacs-lisp-mode
-                   (cq-c-syntax-for-lisp "emacs-lisp-mode")))
+                   (<cq-c-syntax-for-lisp> "emacs-lisp-mode")))
 
 (add-to-list 'cq-syntax-controller-alist
              (list 'lisp-interaction-mode
-                   (cq-c-syntax-for-lisp "lisp-interaction-mode")))
+                   (<cq-c-syntax-for-lisp> "lisp-interaction-mode")))
 
 (add-to-list 'cq-syntax-controller-alist
              (list 'clojure-mode
-                   (cq-c-syntax-for-lisp "clojure-mode")))
+                   (<cq-c-syntax-for-lisp> "clojure-mode")))
 
 (add-to-list 'cq-syntax-controller-alist
              (list 'js-mode
-                   (cq-c-syntax-for-javascript "js-mode")))
+                   (<cq-c-syntax-for-javascript> "js-mode")))
 
 (add-to-list 'cq-syntax-controller-alist
              (list 'js2-mode
-                   (cq-c-syntax-for-javascript "js2-mode")))
+                   (<cq-c-syntax-for-javascript> "js2-mode")))
 
-(defmethod cq-m-forward-1exp ((syntax cq-c-syntax-for-lisp)
+(defmethod .cq-m-forward-1exp ((syntax <cq-c-syntax-for-lisp>)
                               &optional limit)
   (let ((opoint (point)))
     (cond
@@ -128,7 +126,7 @@
       (cq-ding)
       (goto-char opoint))))
 
-(defmethod cq-m-backward-1exp ((syntax cq-c-syntax-for-lisp)
+(defmethod .cq-m-backward-1exp ((syntax <cq-c-syntax-for-lisp>)
                                &optional limit)
   (let ((opoint (point)) comment-begin)
     (cond
@@ -163,7 +161,7 @@
       (cq-ding)
       (goto-char opoint))))
 
-(defmethod cq-m-forward-1exp ((syntax cq-c-syntax-for-javascript)
+(defmethod .cq-m-forward-1exp ((syntax <cq-c-syntax-for-javascript>)
                               &optional limit)
   (let ((opoint (point)))
     (cond
@@ -195,7 +193,7 @@
       (cq-ding)
       (goto-char opoint))))
 
-(defmethod cq-m-backward-1exp ((syntax cq-c-syntax-for-javascript)
+(defmethod .cq-m-backward-1exp ((syntax <cq-c-syntax-for-javascript>)
                                &optional limit)
   (let ((opoint (point)) comment-begin)
     (cond
@@ -393,14 +391,14 @@
   (let ((syntax (assoc major-mode cq-syntax-controller-alist)))
     (if (not syntax)
         (cq-forward-char)
-      (cq-m-forward-1exp (nth 1 syntax) limit))))
+      (.cq-m-forward-1exp (nth 1 syntax) limit))))
 
 (defun cq-backward-sexp (&optional limit)
   (interactive)
   (let ((syntax (assoc major-mode cq-syntax-controller-alist)))
     (if (not syntax)
         (cq-backward-char)
-      (cq-m-backward-1exp (nth 1 syntax) limit))))
+      (.cq-m-backward-1exp (nth 1 syntax) limit))))
 
 (defun cq-within-string (pos)
   (save-excursion
