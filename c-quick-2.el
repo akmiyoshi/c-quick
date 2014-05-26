@@ -177,8 +177,9 @@
           (setq opoint (point))
           (forward-line))
         (goto-char (max opoint (save-excursion (beginning-of-line) (point))))))
-     ((looking-at "\\s.+") (goto-char (match-end 0)))
      ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
+     ((looking-at "/[*]") (search-forward "*/"))
+     ((looking-at "\\s.+") (goto-char (match-end 0)))
      ((looking-at "\n")
       (let ((bol? (bolp)))
         (forward-char)
@@ -211,6 +212,10 @@
                     (setq comment-begin
                           (cq-find-comment-beginning (point)))))
         (goto-char comment-begin)))
+     ((cq-looking-back "[*]/")
+      (search-backward "/*")
+      (while (cq-within-comment (point))
+        (search-backward "/*")))
      ((cq-looking-back "\\s.+")
       (goto-char (match-beginning 0)))
      ((cq-looking-back "\\s-")
@@ -434,7 +439,8 @@
 (defun cq-within-comment (pos)
   (save-excursion
     (goto-char pos)
-    (let ((ppss (cq-syntax-ppss)))
+    (let ((ppss (cq-syntax-ppss))
+          (is-line-comment t))
       (if (not (nth 4 ppss))
           nil
         (goto-char (nth 8 ppss))
@@ -442,12 +448,19 @@
          ((looking-at "//") ;; C/C++/Java/JavaScript
           (while (looking-at "/")
             (forward-char)))
-         (t
-          (while (looking-at "\\s<")
-            (forward-char))))
+         ((looking-at "/[*]") ;; C/C++/Java/JavaScript
+          (setq is-line-comment nil)
+          (goto-char (match-end 0)))
+         (t (while (looking-at "\\s<")
+              (forward-char))))
         (list (nth 8 ppss)
               (point)
-              (progn (end-of-line) (point)))))))
+              (progn
+                (if is-line-comment
+                    (end-of-line)
+                  (search-forward "*/")
+                  (goto-char (match-beginning 0)))
+                (point)))))))
 
 (defun cq-forward-within-comment ()
   (let (within-comment)
