@@ -80,19 +80,23 @@
 
 (add-to-list 'cq-syntax-controller-alist
              (list 'emacs-lisp-mode
-                   (make-instance 'cq-c-syntax-for-lisp)))
+                   (cq-c-syntax-for-lisp "emacs-lisp-mode")))
 
 (add-to-list 'cq-syntax-controller-alist
              (list 'lisp-interaction-mode
-                   (make-instance 'cq-c-syntax-for-lisp)))
+                   (cq-c-syntax-for-lisp "lisp-interaction-mode")))
+
+(add-to-list 'cq-syntax-controller-alist
+             (list 'clojure-mode
+                   (cq-c-syntax-for-lisp "clojure-mode")))
 
 (add-to-list 'cq-syntax-controller-alist
              (list 'js-mode
-                   (make-instance 'cq-c-syntax-for-javascript)))
+                   (cq-c-syntax-for-javascript "js-mode")))
 
 (add-to-list 'cq-syntax-controller-alist
              (list 'js2-mode
-                   (make-instance 'cq-c-syntax-for-javascript)))
+                   (cq-c-syntax-for-javascript "js2-mode")))
 
 (defmethod cq-m-forward-1exp ((syntax cq-c-syntax-for-lisp)
                               &optional limit)
