@@ -459,14 +459,15 @@
       (setq buffname (buffer-name currbuff))
       (cond
        ((eq bufforig currbuff) nil)
-       ;; ((minibufferp currbuff) nil)         ;; minibuffer(1)
-       ((string-match "^[ ]" buffname) nil) ;; minibuffer(2)
-       ((string-match "^[*]" buffname) nil) ;; *scratch*, *Help*, etc
+       ((string-match "^[ ]" buffname) nil);; minibuffer(2)
+       ((string-match "^[*]" buffname) nil);; *scratch*, *Help*, etc
        (t (setq found currbuff))))
     (if (not found)
         (ding)
       (switch-to-buffer found)
-      (bury-buffer found))))
+      (if (featurep 'xemacs)
+          (bury-buffer found nil)
+        (bury-buffer found)))))
 
 ;;;; Testing
 
