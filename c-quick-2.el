@@ -69,6 +69,161 @@
 
 (defvar _cq-mode_is_on_ nil)
 
+;;;; Classes
+
+(setq cq-syntax-controller-alist nil)
+
+(defclass cq-c-syntax-for-lisp () ())
+(defclass cq-c-syntax-for-javascript () ())
+
+;; (setq cq-syntax-default (make-instance 'cq-c-syntax-for-lisp))
+
+(add-to-list 'cq-syntax-controller-alist
+             (list 'emacs-lisp-mode
+                   (make-instance 'cq-c-syntax-for-lisp)))
+
+(add-to-list 'cq-syntax-controller-alist
+             (list 'lisp-interaction-mode
+                   (make-instance 'cq-c-syntax-for-lisp)))
+
+(add-to-list 'cq-syntax-controller-alist
+             (list 'js-mode
+                   (make-instance 'cq-c-syntax-for-javascript)))
+
+(add-to-list 'cq-syntax-controller-alist
+             (list 'js2-mode
+                   (make-instance 'cq-c-syntax-for-javascript)))
+
+(defmethod cq-m-forward-1exp ((syntax cq-c-syntax-for-lisp)
+                              &optional limit)
+  (let ((opoint (point)))
+    (cond
+     ((eobp) (cq-ding))
+     ((and (not limit) (cq-within-string (point)))
+      (cq-forward-within-string))
+     ((and (not limit) (cq-within-comment (point)))
+      (cq-forward-within-comment))
+     ((and limit (looking-at "\\s-+")) (goto-char (match-end 0)))
+     ((and limit (looking-at "\\s<+")) (goto-char (match-end 0)))
+     ((looking-at "\\s-*\\s<")
+      (let ((opoint (point)))
+        (forward-line)
+        (while (looking-at "\\s-*\\s<")
+          (setq opoint (point))
+          (forward-line))
+        (goto-char (max opoint (save-excursion (beginning-of-line) (point))))))
+     ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
+     ((looking-at "\n")
+      (let ((bol? (bolp)))
+        (forward-char)
+        (when bol?
+          (while (and (bolp) (looking-at "\n"))
+            (forward-char)))))
+     (t (condition-case err (forward-sexp) (error (cq-ding)))))
+    (when (and limit (> (point) limit))
+      (cq-ding)
+      (goto-char opoint))))
+
+(defmethod cq-m-backward-1exp ((syntax cq-c-syntax-for-lisp)
+                               &optional limit)
+  (let ((opoint (point)) comment-begin)
+    (cond
+     ((bobp) (cq-ding))
+     ((and (not limit) (cq-within-string (point)))
+      (cq-backward-within-string))
+     ((and (not limit) (cq-within-comment (point)))
+      (cq-backward-within-comment))
+     ((and (cq-looking-back "\\s>")
+           (save-excursion
+             (backward-char)
+             (setq comment-begin
+                   (cq-find-comment-beginning (point)))))
+      (goto-char comment-begin)
+      (while (and (cq-looking-back "\\s>")
+                  (save-excursion
+                    (backward-char)
+                    (setq comment-begin
+                          (cq-find-comment-beginning (point)))))
+        (goto-char comment-begin)))
+     ((cq-looking-back "\\s-")
+      (while (cq-looking-back "\\s-") (backward-char)))
+     ((cq-looking-back "\\s<")
+      (while (cq-looking-back "\\s<") (backward-char)))
+     ((cq-looking-back "\n")
+      (backward-char)
+      (while (and (bolp) (cq-looking-back "\n")
+                  (save-excursion (backward-char) (bolp)))
+        (backward-char)))
+     (t (condition-case err (backward-sexp) (error (cq-ding)))))
+    (when (and limit (< (point) limit))
+      (cq-ding)
+      (goto-char opoint))))
+
+(defmethod cq-m-forward-1exp ((syntax cq-c-syntax-for-javascript)
+                              &optional limit)
+  (let ((opoint (point)))
+    (cond
+     ((eobp) (cq-ding))
+     ((and (not limit) (cq-within-string (point)))
+      (cq-forward-within-string))
+     ((and (not limit) (cq-within-comment (point)))
+      (cq-forward-within-comment))
+     ((and limit (looking-at "\\s-+")) (goto-char (match-end 0)))
+     ((and limit (looking-at "\\s<+")) (goto-char (match-end 0)))
+     ((looking-at "\\s-*\\s<")
+      (let ((opoint (point)))
+        (forward-line)
+        (while (looking-at "\\s-*\\s<")
+          (setq opoint (point))
+          (forward-line))
+        (goto-char (max opoint (save-excursion (beginning-of-line) (point))))))
+     ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
+     ((looking-at "\n")
+      (let ((bol? (bolp)))
+        (forward-char)
+        (when bol?
+          (while (and (bolp) (looking-at "\n"))
+            (forward-char)))))
+     (t (condition-case err (forward-sexp) (error (cq-ding)))))
+    (when (and limit (> (point) limit))
+      (cq-ding)
+      (goto-char opoint))))
+
+(defmethod cq-m-backward-1exp ((syntax cq-c-syntax-for-javascript)
+                               &optional limit)
+  (let ((opoint (point)) comment-begin)
+    (cond
+     ((bobp) (cq-ding))
+     ((and (not limit) (cq-within-string (point)))
+      (cq-backward-within-string))
+     ((and (not limit) (cq-within-comment (point)))
+      (cq-backward-within-comment))
+     ((and (cq-looking-back "\\s>")
+           (save-excursion
+             (backward-char)
+             (setq comment-begin
+                   (cq-find-comment-beginning (point)))))
+      (goto-char comment-begin)
+      (while (and (cq-looking-back "\\s>")
+                  (save-excursion
+                    (backward-char)
+                    (setq comment-begin
+                          (cq-find-comment-beginning (point)))))
+        (goto-char comment-begin)))
+     ((cq-looking-back "\\s-")
+      (while (cq-looking-back "\\s-") (backward-char)))
+     ((cq-looking-back "\\s<")
+      (while (cq-looking-back "\\s<") (backward-char)))
+     ((cq-looking-back "\n")
+      (backward-char)
+      (while (and (bolp) (cq-looking-back "\n")
+                  (save-excursion (backward-char) (bolp)))
+        (backward-char)))
+     (t (condition-case err (backward-sexp) (error (cq-ding)))))
+    (when (and limit (< (point) limit))
+      (cq-ding)
+      (goto-char opoint))))
+
 ;;;; Functions
 
 (defun cq-toggle-mode ()
@@ -223,68 +378,17 @@
 
 (defun cq-forward-sexp (&optional limit)
   (interactive)
-  (let ((opoint (point)))
-    (cond
-     ((eobp) (cq-ding))
-     ((and (not limit) (cq-within-string (point)))
-      (cq-forward-within-string))
-     ((and (not limit) (cq-within-comment (point)))
-      (cq-forward-within-comment))
-     ((and limit (looking-at "\\s-+")) (goto-char (match-end 0)))
-     ((and limit (looking-at "\\s<+")) (goto-char (match-end 0)))
-     ((looking-at "\\s-*\\s<")
-      (let ((opoint (point)))
-        (forward-line)
-        (while (looking-at "\\s-*\\s<")
-          (setq opoint (point))
-          (forward-line))
-        (goto-char (max opoint (save-excursion (beginning-of-line) (point))))))
-     ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
-     ((looking-at "\n")
-      (let ((bol? (bolp)))
-        (forward-char)
-        (when bol?
-          (while (and (bolp) (looking-at "\n"))
-            (forward-char)))))
-     (t (condition-case err (forward-sexp) (error (cq-ding)))))
-    (when (and limit (> (point) limit))
-      (cq-ding)
-      (goto-char opoint))))
+  (let ((syntax (assoc major-mode cq-syntax-controller-alist)))
+    (if (not syntax)
+        (cq-forward-char)
+      (cq-m-forward-1exp (nth 1 syntax) limit))))
 
 (defun cq-backward-sexp (&optional limit)
   (interactive)
-  (let ((opoint (point)) comment-begin)
-    (cond
-     ((bobp) (cq-ding))
-     ((and (not limit) (cq-within-string (point)))
-      (cq-backward-within-string))
-     ((and (not limit) (cq-within-comment (point)))
-      (cq-backward-within-comment))
-     ((and (cq-looking-back "\\s>")
-           (save-excursion
-             (backward-char)
-             (setq comment-begin
-                   (cq-find-comment-beginning (point)))))
-      (goto-char comment-begin)
-      (while (and (cq-looking-back "\\s>")
-                  (save-excursion
-                    (backward-char)
-                    (setq comment-begin
-                          (cq-find-comment-beginning (point)))))
-        (goto-char comment-begin)))
-     ((cq-looking-back "\\s-")
-      (while (cq-looking-back "\\s-") (backward-char)))
-     ((cq-looking-back "\\s<")
-      (while (cq-looking-back "\\s<") (backward-char)))
-     ((cq-looking-back "\n")
-      (backward-char)
-      (while (and (bolp) (cq-looking-back "\n")
-                  (save-excursion (backward-char) (bolp)))
-        (backward-char)))
-     (t (condition-case err (backward-sexp) (error (cq-ding)))))
-    (when (and limit (< (point) limit))
-      (cq-ding)
-      (goto-char opoint))))
+  (let ((syntax (assoc major-mode cq-syntax-controller-alist)))
+    (if (not syntax)
+        (cq-backward-char)
+      (cq-m-backward-1exp (nth 1 syntax) limit))))
 
 (defun cq-within-string (pos)
   (save-excursion
