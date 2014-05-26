@@ -21,6 +21,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+(require 'eieio)
 (require 'etags)
 (require 'find-func)
 
@@ -429,24 +430,20 @@
 (defun cq-mark-sexp ()
   (interactive)
   (if (eq last-command this-command)
-      (progn
-        (cq-forward-sexp)
-        (cq-activate-region-for-xemacs))
+      (cq-forward-sexp)
     (set-mark (point))
-    (cq-forward-sexp)
-    (cq-activate-region-for-xemacs)))
+    (cq-forward-sexp))
+  (cq-activate-region-for-xemacs))
 
 (defun cq-mark-defun ()
   (interactive)
   (if (eq last-command this-command)
-      (progn
-        (end-of-defun)
-        (cq-activate-region-for-xemacs))
+      (end-of-defun)
     (unless (looking-at "^\\s(")
       (beginning-of-defun))
     (set-mark (point))
-    (end-of-defun)
-    (cq-activate-region-for-xemacs)))
+    (end-of-defun))
+  (cq-activate-region-for-xemacs))
 
 (defun cq-rotate-buffer-for-file ()
   (interactive)
