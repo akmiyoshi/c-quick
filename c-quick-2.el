@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.12
+;; Version: 2.0.13
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -424,19 +424,6 @@
     (if (<= (point) (nth 0 parsed))
         (cq-ding)
       (cq-backward-sexp (nth 0 parsed)))))
-
-;; (defun cq-within-comment (pos)
-;;   (save-excursion
-;;     (goto-char pos)
-;;     (let ((ppss (cq-syntax-ppss)))
-;;       (if (not (nth 4 ppss))
-;;           nil
-;;         (goto-char (nth 8 ppss))
-;;         (while (looking-at "\\s<")
-;;           (forward-char))
-;;         (list (nth 8 ppss)
-;;               (point)
-;;               (progn (end-of-line) (point)))))))
 
 (defun cq-within-comment (pos)
   (save-excursion
