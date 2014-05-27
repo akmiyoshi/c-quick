@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.13
+;; Version: 2.0.14
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -58,11 +58,11 @@
   :prefix "cq-")
 
 (defcustom cq-ding-dings t ""
-  :group 'cq
+  :group 'c-quick
   :type  'boolean)
 
 (defcustom cq-paren-only t ""
-  :group 'cq
+  :group 'c-quick
   :type  'boolean)
 
 ;;;; Internal Variables
@@ -71,33 +71,31 @@
 
 ;;;; Classes
 
-(setq cq-syntax-controller-alist nil)
+(defclass <cq-lexer-for-lisp> () ())
+(defclass <cq-lexer-for-C> () ())
 
-(defclass <cq-c-syntax-for-lisp> () ())
-(defclass <cq-c-syntax-for-javascript> () ())
+(setq *cq-lexer-for-lisp* (<cq-lexer-for-lisp> "<cq-lexer-for-lisp>"))
+(setq *cq-lexer-for-C*    (<cq-lexer-for-C>    "<cq-lexer-for-C>"))
 
-(add-to-list 'cq-syntax-controller-alist
-             (list 'emacs-lisp-mode
-                   (<cq-c-syntax-for-lisp> "emacs-lisp-mode")))
+(setq cq-lexer-alist nil)
 
-(add-to-list 'cq-syntax-controller-alist
-             (list 'lisp-interaction-mode
-                   (<cq-c-syntax-for-lisp> "lisp-interaction-mode")))
+(add-to-list 'cq-lexer-alist
+             (list 'emacs-lisp-mode *cq-lexer-for-lisp*))
 
-(add-to-list 'cq-syntax-controller-alist
-             (list 'clojure-mode
-                   (<cq-c-syntax-for-lisp> "clojure-mode")))
+(add-to-list 'cq-lexer-alist
+             (list 'lisp-interaction-mode *cq-lexer-for-lisp*))
 
-(add-to-list 'cq-syntax-controller-alist
-             (list 'js-mode
-                   (<cq-c-syntax-for-javascript> "js-mode")))
+(add-to-list 'cq-lexer-alist
+             (list 'clojure-mode *cq-lexer-for-lisp*))
 
-(add-to-list 'cq-syntax-controller-alist
-             (list 'js2-mode
-                   (<cq-c-syntax-for-javascript> "js2-mode")))
+(add-to-list 'cq-lexer-alist
+             (list 'js-mode *cq-lexer-for-C*))
 
-(defmethod .cq-m-forward-1exp ((syntax <cq-c-syntax-for-lisp>)
-                              &optional limit)
+(add-to-list 'cq-lexer-alist
+             (list 'js2-mode *cq-lexer-for-C*))
+
+(defmethod !cq-forward-1exp ((lexer <cq-lexer-for-lisp>)
+                                       &optional limit)
   (let ((opoint (point)))
     (cond
      ((eobp) (cq-ding))
@@ -126,8 +124,8 @@
       (cq-ding)
       (goto-char opoint))))
 
-(defmethod .cq-m-backward-1exp ((syntax <cq-c-syntax-for-lisp>)
-                               &optional limit)
+(defmethod !cq-backward-1exp ((lexer <cq-lexer-for-lisp>)
+                                        &optional limit)
   (let ((opoint (point)) comment-begin)
     (cond
      ((bobp) (cq-ding))
@@ -161,8 +159,8 @@
       (cq-ding)
       (goto-char opoint))))
 
-(defmethod .cq-m-forward-1exp ((syntax <cq-c-syntax-for-javascript>)
-                              &optional limit)
+(defmethod !cq-forward-1exp ((lexer <cq-lexer-for-C>)
+                                       &optional limit)
   (let ((opoint (point)))
     (cond
      ((eobp) (cq-ding))
@@ -193,8 +191,8 @@
       (cq-ding)
       (goto-char opoint))))
 
-(defmethod .cq-m-backward-1exp ((syntax <cq-c-syntax-for-javascript>)
-                               &optional limit)
+(defmethod !cq-backward-1exp ((lexer <cq-lexer-for-C>)
+                                        &optional limit)
   (let ((opoint (point)) comment-begin)
     (cond
      ((bobp) (cq-ding))
@@ -388,17 +386,17 @@
 
 (defun cq-forward-sexp (&optional limit)
   (interactive)
-  (let ((syntax (assoc major-mode cq-syntax-controller-alist)))
+  (let ((syntax (assoc major-mode cq-lexer-alist)))
     (if (not syntax)
         (cq-forward-char)
-      (.cq-m-forward-1exp (nth 1 syntax) limit))))
+      (!cq-forward-1exp (nth 1 syntax) limit))))
 
 (defun cq-backward-sexp (&optional limit)
   (interactive)
-  (let ((syntax (assoc major-mode cq-syntax-controller-alist)))
+  (let ((syntax (assoc major-mode cq-lexer-alist)))
     (if (not syntax)
         (cq-backward-char)
-      (.cq-m-backward-1exp (nth 1 syntax) limit))))
+      (!cq-backward-1exp (nth 1 syntax) limit))))
 
 (defun cq-within-string (pos)
   (save-excursion
