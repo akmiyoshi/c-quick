@@ -6,7 +6,7 @@
 ;; Author: akmiyoshi
 ;; URL: https://github.com/akmiyoshi/c-quick/
 ;; Keywords: lisp, clojure
-;; Version: 2.0.14
+;; Version: 2.0.15
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@
 ;;;; Classes
 
 (defclass <cq-lexer-for-lisp> () ())
-(defclass <cq-lexer-for-C> () ())
+(defclass <cq-lexer-for-C>    () ())
 
 (setq *cq-lexer-for-lisp* (<cq-lexer-for-lisp> "<cq-lexer-for-lisp>"))
 (setq *cq-lexer-for-C*    (<cq-lexer-for-C>    "<cq-lexer-for-C>"))
@@ -94,57 +94,57 @@
 (add-to-list 'cq-lexer-alist
              (list 'js2-mode *cq-lexer-for-C*))
 
-(defmethod !cq-forward-1exp ((lexer <cq-lexer-for-lisp>)
-                                       &optional limit)
-  (let ((opoint (point)))
+(defmethod !cq-forward-1exp ((this <cq-lexer-for-lisp>)
+                             &optional $limit)
+  (let (($opoint (point)))
     (cond
      ((eobp) (cq-ding))
-     ((and (not limit) (cq-within-string (point)))
+     ((and (not $limit) (cq-within-string (point)))
       (cq-forward-within-string))
-     ((and (not limit) (cq-within-comment (point)))
+     ((and (not $limit) (cq-within-comment (point)))
       (cq-forward-within-comment))
-     ((and limit (looking-at "\\s-+")) (goto-char (match-end 0)))
-     ((and limit (looking-at "\\s<+")) (goto-char (match-end 0)))
+     ((and $limit (looking-at "\\s-+")) (goto-char (match-end 0)))
+     ((and $limit (looking-at "\\s<+")) (goto-char (match-end 0)))
      ((looking-at "\\s-*\\s<")
-      (let ((opoint (point)))
+      (let (($opoint (point)))
         (forward-line)
         (while (looking-at "\\s-*\\s<")
-          (setq opoint (point))
+          (setq $opoint (point))
           (forward-line))
-        (goto-char (max opoint (save-excursion (beginning-of-line) (point))))))
+        (goto-char (max $opoint (save-excursion (beginning-of-line) (point))))))
      ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
      ((looking-at "\n")
-      (let ((bol? (bolp)))
+      (let (($bolp (bolp)))
         (forward-char)
-        (when bol?
+        (when $bolp
           (while (and (bolp) (looking-at "\n"))
             (forward-char)))))
      (t (condition-case err (forward-sexp) (error (cq-ding)))))
-    (when (and limit (> (point) limit))
+    (when (and $limit (> (point) $limit))
       (cq-ding)
-      (goto-char opoint))))
+      (goto-char $opoint))))
 
-(defmethod !cq-backward-1exp ((lexer <cq-lexer-for-lisp>)
-                                        &optional limit)
-  (let ((opoint (point)) comment-begin)
+(defmethod !cq-backward-1exp ((this <cq-lexer-for-lisp>)
+                              &optional $limit)
+  (let (($opoint (point)) $comment-begin)
     (cond
      ((bobp) (cq-ding))
-     ((and (not limit) (cq-within-string (point)))
+     ((and (not $limit) (cq-within-string (point)))
       (cq-backward-within-string))
-     ((and (not limit) (cq-within-comment (point)))
+     ((and (not $limit) (cq-within-comment (point)))
       (cq-backward-within-comment))
      ((and (cq-looking-back "\\s>")
            (save-excursion
              (backward-char)
-             (setq comment-begin
+             (setq $comment-begin
                    (cq-find-comment-beginning (point)))))
-      (goto-char comment-begin)
+      (goto-char $comment-begin)
       (while (and (cq-looking-back "\\s>")
                   (save-excursion
                     (backward-char)
-                    (setq comment-begin
+                    (setq $comment-begin
                           (cq-find-comment-beginning (point)))))
-        (goto-char comment-begin)))
+        (goto-char $comment-begin)))
      ((cq-looking-back "\\s-")
       (while (cq-looking-back "\\s-") (backward-char)))
      ((cq-looking-back "\\s<")
@@ -154,51 +154,51 @@
       (while (and (bolp) (cq-looking-back "\n")
                   (save-excursion (backward-char) (bolp)))
         (backward-char)))
-     (t (condition-case err (backward-sexp) (error (cq-ding)))))
-    (when (and limit (< (point) limit))
+     (t (condition-case $err (backward-sexp) (error (cq-ding)))))
+    (when (and $limit (< (point) $limit))
       (cq-ding)
-      (goto-char opoint))))
+      (goto-char $opoint))))
 
-(defmethod !cq-forward-1exp ((lexer <cq-lexer-for-C>)
-                                       &optional limit)
-  (let ((opoint (point)))
+(defmethod !cq-forward-1exp ((this <cq-lexer-for-C>)
+                             &optional $limit)
+  (let (($opoint (point)))
     (cond
      ((eobp) (cq-ding))
-     ((and (not limit) (cq-within-string (point)))
+     ((and (not $limit) (cq-within-string (point)))
       (cq-forward-within-string))
-     ((and (not limit) (cq-within-comment (point)))
+     ((and (not $limit) (cq-within-comment (point)))
       (cq-forward-within-comment))
-     ((and limit (looking-at "\\s-+")) (goto-char (match-end 0)))
-     ((and limit (looking-at "\\s<+")) (goto-char (match-end 0)))
+     ((and $limit (looking-at "\\s-+")) (goto-char (match-end 0)))
+     ((and $limit (looking-at "\\s<+")) (goto-char (match-end 0)))
      ((looking-at "\\s-*//")
-      (let ((opoint (point)))
+      (let (($opoint (point)))
         (forward-line)
         (while (looking-at "\\s-*//")
-          (setq opoint (point))
+          (setq $opoint (point))
           (forward-line))
-        (goto-char (max opoint (save-excursion (beginning-of-line) (point))))))
+        (goto-char (max $opoint (save-excursion (beginning-of-line) (point))))))
      ((looking-at "\\s-") (while (looking-at "\\s-") (forward-char)))
      ((looking-at "/[*]") (search-forward "*/"))
      ((looking-at "\\s.+") (goto-char (match-end 0)))
      ((looking-at "\n")
-      (let ((bol? (bolp)))
+      (let (($bol (bolp)))
         (forward-char)
-        (when bol?
+        (when $bol
           (while (and (bolp) (looking-at "\n"))
             (forward-char)))))
-     (t (condition-case err (forward-sexp) (error (cq-ding)))))
-    (when (and limit (> (point) limit))
+     (t (condition-case $err (forward-sexp) (error (cq-ding)))))
+    (when (and $limit (> (point) $limit))
       (cq-ding)
-      (goto-char opoint))))
+      (goto-char $opoint))))
 
-(defmethod !cq-backward-1exp ((lexer <cq-lexer-for-C>)
-                                        &optional limit)
-  (let ((opoint (point)) comment-begin)
+(defmethod !cq-backward-1exp ((this <cq-lexer-for-C>)
+                              &optional $limit)
+  (let (($opoint (point)) comment-begin)
     (cond
      ((bobp) (cq-ding))
-     ((and (not limit) (cq-within-string (point)))
+     ((and (not $limit) (cq-within-string (point)))
       (cq-backward-within-string))
-     ((and (not limit) (cq-within-comment (point)))
+     ((and (not $limit) (cq-within-comment (point)))
       (cq-backward-within-comment))
      ((and (cq-looking-back "\\s>")
            (save-excursion
@@ -227,10 +227,10 @@
       (while (and (bolp) (cq-looking-back "\n")
                   (save-excursion (backward-char) (bolp)))
         (backward-char)))
-     (t (condition-case err (backward-sexp) (error (cq-ding)))))
-    (when (and limit (< (point) limit))
+     (t (condition-case $err (backward-sexp) (error (cq-ding)))))
+    (when (and $limit (< (point) $limit))
       (cq-ding)
-      (goto-char opoint))))
+      (goto-char $opoint))))
 
 ;;;; Functions
 
@@ -243,8 +243,8 @@
    (t (message "c-quick-mode is OFF")))
   (cq-extend-region-for-xemacs))
 
-(defun cq-set-mode (arg)
-  (if (not arg)
+(defun cq-set-mode ($arg)
+  (if (not $arg)
       (progn
         (and (fboundp 'global-whitespace-mode) (global-whitespace-mode 0))
         (and (fboundp 'show-paren-mode) (show-paren-mode 0)))
@@ -262,25 +262,25 @@
 (defun cq-ding ()
   (if cq-ding-dings (ding)))
 
-(defun cq-looking-back (regexp &optional limit greedy)
-  (let ((start (point))
-        (pos
+(defun cq-looking-back ($regexp &optional $limit $greedy)
+  (let (($start (point))
+        ($pos
          (save-excursion
-           (and (re-search-backward (concat "\\(?:" regexp "\\)\\=") limit t)
+           (and (re-search-backward (concat "\\(?:" $regexp "\\)\\=") $limit t)
                 (point)))))
-    (if (and greedy pos)
+    (if (and $greedy $pos)
         (save-restriction
-          (narrow-to-region (point-min) start)
-          (while (and (> pos (point-min))
+          (narrow-to-region (point-min) $start)
+          (while (and (> $pos (point-min))
                       (save-excursion
-                        (goto-char pos)
+                        (goto-char $pos)
                         (backward-char 1)
-                        (looking-at (concat "\\(?:"  regexp "\\)\\'"))))
-            (setq pos (1- pos)))
+                        (looking-at (concat "\\(?:"  $regexp "\\)\\'"))))
+            (setq $pos (1- $pos)))
           (save-excursion
-            (goto-char pos)
-            (looking-at (concat "\\(?:"  regexp "\\)\\'")))))
-    (not (null pos))))
+            (goto-char $pos)
+            (looking-at (concat "\\(?:"  $regexp "\\)\\'")))))
+    (not (null $pos))))
 
 (defun cq-activate-region-for-xemacs ()
   (and (fboundp 'activate-region) (activate-region)))
@@ -384,94 +384,94 @@
       (cq-ding)
     (previous-line 1)))
 
-(defun cq-forward-sexp (&optional limit)
+(defun cq-forward-sexp (&optional $limit)
   (interactive)
-  (let ((syntax (assoc major-mode cq-lexer-alist)))
-    (if (not syntax)
+  (let (($syntax (assoc major-mode cq-lexer-alist)))
+    (if (not $syntax)
         (cq-forward-char)
-      (!cq-forward-1exp (nth 1 syntax) limit))))
+      (!cq-forward-1exp (nth 1 $syntax) $limit))))
 
-(defun cq-backward-sexp (&optional limit)
+(defun cq-backward-sexp (&optional $limit)
   (interactive)
-  (let ((syntax (assoc major-mode cq-lexer-alist)))
-    (if (not syntax)
+  (let (($syntax (assoc major-mode cq-lexer-alist)))
+    (if (not $syntax)
         (cq-backward-char)
-      (!cq-backward-1exp (nth 1 syntax) limit))))
+      (!cq-backward-1exp (nth 1 $syntax) $limit))))
 
-(defun cq-within-string (pos)
+(defun cq-within-string ($pos)
   (save-excursion
-    (goto-char pos)
-    (let ((ppss (cq-syntax-ppss))
-          beg end)
-      (if (not (nth 3 ppss))
+    (goto-char $pos)
+    (let (($ppss (cq-syntax-ppss))
+          $beg $end)
+      (if (not (nth 3 $ppss))
           nil
-        (setq beg (nth 8 ppss))
-        (goto-char beg)
+        (setq $beg (nth 8 $ppss))
+        (goto-char $beg)
         (forward-sexp)
-        (setq end (point))
-        (list (1+ beg) (1- end))))))
+        (setq $end (point))
+        (list (1+ $beg) (1- $end))))))
 
 (defun cq-forward-within-string ()
-  (let ((parsed (cq-within-string (point))))
-    (if (>= (point) (nth 1 parsed))
+  (let (($parsed (cq-within-string (point))))
+    (if (>= (point) (nth 1 $parsed))
         (cq-ding)
-      (cq-forward-sexp (nth 1 parsed)))))
+      (cq-forward-sexp (nth 1 $parsed)))))
 
 (defun cq-backward-within-string ()
-  (let ((parsed (cq-within-string (point))))
-    (if (<= (point) (nth 0 parsed))
+  (let (($parsed (cq-within-string (point))))
+    (if (<= (point) (nth 0 $parsed))
         (cq-ding)
-      (cq-backward-sexp (nth 0 parsed)))))
+      (cq-backward-sexp (nth 0 $parsed)))))
 
-(defun cq-within-comment (pos)
+(defun cq-within-comment ($pos)
   (save-excursion
-    (goto-char pos)
-    (let ((ppss (cq-syntax-ppss))
-          (is-line-comment t))
-      (if (not (nth 4 ppss))
+    (goto-char $pos)
+    (let (($ppss (cq-syntax-ppss))
+          ($is-line-comment t))
+      (if (not (nth 4 $ppss))
           nil
-        (goto-char (nth 8 ppss))
+        (goto-char (nth 8 $ppss))
         (cond
          ((looking-at "//") ;; C/C++/Java/JavaScript
           (while (looking-at "/")
             (forward-char)))
          ((looking-at "/[*]") ;; C/C++/Java/JavaScript
-          (setq is-line-comment nil)
+          (setq $is-line-comment nil)
           (goto-char (match-end 0)))
          (t (while (looking-at "\\s<")
               (forward-char))))
-        (list (nth 8 ppss)
+        (list (nth 8 $ppss)
               (point)
               (progn
-                (if is-line-comment
+                (if $is-line-comment
                     (end-of-line)
                   (search-forward "*/")
                   (goto-char (match-beginning 0)))
                 (point)))))))
 
 (defun cq-forward-within-comment ()
-  (let (within-comment)
+  (let ($within-comment)
     (cond
      ((and
        (looking-at "\\s>")
        (save-excursion
          (forward-line)
          (end-of-line)
-         (setq within-comment
+         (setq $within-comment
                (cq-within-comment (point)))))
-      (goto-char (nth 1 within-comment)))
+      (goto-char (nth 1 $within-comment)))
      ((looking-at "\\s>")
       (cq-ding))
      (t
-      (setq within-comment
+      (setq $within-comment
             (cq-within-comment (point)))
-      (cq-forward-sexp (nth 2 within-comment))))))
+      (cq-forward-sexp (nth 2 $within-comment))))))
 
 (defun cq-backward-within-comment ()
-  (let ((within-comment (cq-within-comment (point))))
+  (let (($within-comment (cq-within-comment (point))))
     (cond
      ((and
-       (<= (point) (nth 1 within-comment))
+       (<= (point) (nth 1 $within-comment))
        (save-excursion
          (beginning-of-line)
          (and
@@ -481,17 +481,17 @@
             (cq-within-comment (point))))))
       (beginning-of-line)
       (backward-char))
-     ((<= (point) (nth 1 within-comment))
+     ((<= (point) (nth 1 $within-comment))
       (cq-ding))
-     (t (cq-backward-sexp (nth 1 within-comment))))))
+     (t (cq-backward-sexp (nth 1 $within-comment))))))
 
-(defun cq-find-comment-beginning (eol)
+(defun cq-find-comment-beginning ($eol)
   (save-excursion
-    (goto-char eol)
-    (let ((parsed (cq-within-comment (point))))
-      (if (not parsed)
+    (goto-char $eol)
+    (let (($parsed (cq-within-comment (point))))
+      (if (not $parsed)
           nil
-        (goto-char (nth 0 parsed))
+        (goto-char (nth 0 $parsed))
         (while (cq-looking-back "\\s-") (backward-char))
         (point)))))
 
@@ -502,18 +502,18 @@
         (cond
          ((cq-within-string (point)) nil)
          ((cq-looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
-          (let ((opoint (point)))
+          (let (($opoint (point)))
             (cq-backward-sexp)
-            (cq-count-lines opoint (point))))
+            (cq-count-lines $opoint (point))))
          ((looking-at
            "\\(\\s-*\\)\\(\\sw\\|\\s_\\|\\s(\\|\\s<\\|\\s\"\\|\\s'\\)")
           (goto-char (match-end 1))
-          (let ((opoint (point)))
+          (let (($opoint (point)))
             (cq-forward-sexp)
-            (cq-count-lines opoint (point)))))))))
+            (cq-count-lines $opoint (point)))))))))
 
-(defun cq-count-lines (start end)
-  (let ((lines (count-lines start end)))
+(defun cq-count-lines ($start $end)
+  (let ((lines (count-lines $start $end)))
     (if (= lines 1) (message "1 line.") (message "%s lines." lines))))
 
 (defun cq-recenter ()
@@ -534,8 +534,8 @@
 (defun cq-copy-region ()
   (interactive)
   (cq-operate-on-region-or-sexp
-   #'(lambda (beg end)
-       (kill-ring-save beg end)
+   #'(lambda ($beg $end)
+       (kill-ring-save $beg $end)
        (setq this-command 'kill-region))))
 
 (defun cq-delete-region ()
@@ -545,8 +545,8 @@
 (defun cq-indent-region ()
   (interactive)
   (cq-operate-on-region-or-sexp
-   #'(lambda (beg end)
-       (indent-region beg end nil))))
+   #'(lambda ($beg $end)
+       (indent-region $beg $end nil))))
 
 (defun cq-kill-region ()
   (interactive)
@@ -572,66 +572,66 @@
 
 (defun cq-rotate-buffer-for-file ()
   (interactive)
-  (let ((bufflist (buffer-list))
-        (bufforig (current-buffer))
-        (found nil)
-        currbuff buffname)
-    (while (and bufflist (not found))
-      (setq currbuff (pop bufflist))
-      (setq buffname (buffer-name currbuff))
+  (let (($bufflist (buffer-list))
+        ($bufforig (current-buffer))
+        ($found nil)
+        $currbuff $buffname)
+    (while (and $bufflist (not $found))
+      (setq $currbuff (pop $bufflist))
+      (setq $buffname (buffer-name $currbuff))
       (cond
-       ((eq bufforig currbuff) nil)
-       ((string-match "^[ ]" buffname) nil);; minibuffer(2)
-       ((string-match "^[*]" buffname) nil);; *scratch*, *Help*, etc
-       (t (setq found currbuff))))
-    (if (not found)
+       ((eq $bufforig $currbuff) nil)
+       ((string-match "^[ ]" $buffname) nil);; minibuffer
+       ((string-match "^[*]" $buffname) nil);; *scratch*, *Help*, etc
+       (t (setq $found $currbuff))))
+    (if (not $found)
         (ding)
-      (switch-to-buffer found)
+      (switch-to-buffer $found)
       (if (featurep 'xemacs)
-          (bury-buffer found nil)
-        (bury-buffer found)))))
+          (bury-buffer $found nil)
+        (bury-buffer $found)))))
 
 ;;;; Testing
 
 (defun cq-jump-to-function-or-variable ()
   (interactive)
-  (let* ((func-name (find-tag-default))
-         (interned (intern func-name)))
+  (let* (($funcname (find-tag-default))
+         ($interned (intern $funcname)))
     (cond
-     ((cq-built-in-function-p interned)
-      (describe-function interned))
-     ((fboundp interned)
-      (find-function interned))
-     ((user-variable-p interned)
-      (find-variable interned))
-     ((boundp interned)
-      (describe-variable interned))
-     (t (error "%s is not a lisp function nor a user variable" interned)))))
+     ((cq-built-in-function-p $interned)
+      (describe-function $interned))
+     ((fboundp $interned)
+      (find-function $interned))
+     ((user-variable-p $interned)
+      (find-variable $interned))
+     ((boundp $interned)
+      (describe-variable $interned))
+     (t (error "%s is not a lisp function nor a user variable" $interned)))))
 
-(defun cq-built-in-function-p (symbol)
-  ;; (require 'cl) (assert (symbolp symbol))
-  (if (not (fboundp symbol))
+(defun cq-built-in-function-p ($symbol)
+  ;; (require 'cl) (assert (symbolp $symbol))
+  (if (not (fboundp $symbol))
       nil
     (subrp
      (symbol-function
-      (cq-find-function-advised-original symbol)))))
+      (cq-find-function-advised-original $symbol)))))
 
-(defun cq-find-function-advised-original (func)
+(defun cq-find-function-advised-original ($func)
   "Return the original function symbol of an advised function FUNC.
 If FUNC is not the symbol of an advised function, just returns FUNC."
-  (or (and (symbolp func)
+  (or (and (symbolp $func)
            (featurep 'advice)
-           (let ((ofunc (cdr (assq 'origname (ad-get-advice-info func)))))
-             (and (fboundp ofunc) ofunc)))
-      func))
+           (let (($ofunc (cdr (assq 'origname (ad-get-advice-info $func)))))
+             (and (fboundp $ofunc) $ofunc)))
+      $func))
 
-(defun cq-exchange-point-and-mark (arg)
+(defun cq-exchange-point-and-mark ($arg)
   (interactive "P")
-  (let ((active (region-active-p)))
-    (exchange-point-and-mark arg)
-    (when (not active)
-        (and (fboundp 'deactivate-mark) (deactivate-mark))
-        (and (fboundp 'zmacs-deactivate-region) (zmacs-deactivate-region)))))
+  (let (($active (region-active-p)))
+    (exchange-point-and-mark $arg)
+    (when (not $active)
+      (and (fboundp 'deactivate-mark) (deactivate-mark))
+      (and (fboundp 'zmacs-deactivate-region) (zmacs-deactivate-region)))))
 
 ;; http://www.loveshack.ukfsn.org/emacs/syntax.el
 ;;
