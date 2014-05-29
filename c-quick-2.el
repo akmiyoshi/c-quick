@@ -315,7 +315,7 @@
 (defun cq-right-key ()
   (interactive)
   (if (cq-mode)
-      (cq-forward-sexp)
+      (cq-forward-1exp)
     (cq-forward-char))
   (cq-extend-region-for-xemacs)
   (cq-redisplay))
@@ -323,20 +323,20 @@
 (defun cq-left-key ()
   (interactive)
   (if (cq-mode)
-      (cq-backward-sexp)
+      (cq-backward-1exp)
     (cq-backward-char))
   (cq-extend-region-for-xemacs)
   (cq-redisplay))
 
 (defun cq-right-quick ()
   (interactive)
-  (cq-forward-sexp)
+  (cq-forward-1exp)
   (cq-extend-region-for-xemacs)
   (cq-recenter))
 
 (defun cq-left-quick ()
   (interactive)
-  (cq-backward-sexp)
+  (cq-backward-1exp)
   (cq-extend-region-for-xemacs)
   (cq-recenter))
 
@@ -384,14 +384,14 @@
       (cq-ding)
     (previous-line 1)))
 
-(defun cq-forward-sexp (&optional $limit)
+(defun cq-forward-1exp (&optional $limit)
   (interactive)
   (let (($syntax (assoc major-mode cq-lexer-alist)))
     (if (not $syntax)
         (cq-forward-char)
       (!cq-forward-1exp (nth 1 $syntax) $limit))))
 
-(defun cq-backward-sexp (&optional $limit)
+(defun cq-backward-1exp (&optional $limit)
   (interactive)
   (let (($syntax (assoc major-mode cq-lexer-alist)))
     (if (not $syntax)
@@ -415,13 +415,13 @@
   (let (($parsed (cq-within-string (point))))
     (if (>= (point) (nth 1 $parsed))
         (cq-ding)
-      (cq-forward-sexp (nth 1 $parsed)))))
+      (cq-forward-1exp (nth 1 $parsed)))))
 
 (defun cq-backward-within-string ()
   (let (($parsed (cq-within-string (point))))
     (if (<= (point) (nth 0 $parsed))
         (cq-ding)
-      (cq-backward-sexp (nth 0 $parsed)))))
+      (cq-backward-1exp (nth 0 $parsed)))))
 
 (defun cq-within-comment ($pos)
   (save-excursion
@@ -465,7 +465,7 @@
      (t
       (setq $within-comment
             (cq-within-comment (point)))
-      (cq-forward-sexp (nth 2 $within-comment))))))
+      (cq-forward-1exp (nth 2 $within-comment))))))
 
 (defun cq-backward-within-comment ()
   (let (($within-comment (cq-within-comment (point))))
@@ -483,7 +483,7 @@
       (backward-char))
      ((<= (point) (nth 1 $within-comment))
       (cq-ding))
-     (t (cq-backward-sexp (nth 1 $within-comment))))))
+     (t (cq-backward-1exp (nth 1 $within-comment))))))
 
 (defun cq-find-comment-beginning ($eol)
   (save-excursion
@@ -503,13 +503,13 @@
          ((cq-within-string (point)) nil)
          ((cq-looking-back "\\s)\\|\\s\"\\|\\sw\\|\\s_")
           (let (($opoint (point)))
-            (cq-backward-sexp)
+            (cq-backward-1exp)
             (cq-count-lines $opoint (point))))
          ((looking-at
            "\\(\\s-*\\)\\(\\sw\\|\\s_\\|\\s(\\|\\s<\\|\\s\"\\|\\s'\\)")
           (goto-char (match-end 1))
           (let (($opoint (point)))
-            (cq-forward-sexp)
+            (cq-forward-1exp)
             (cq-count-lines $opoint (point)))))))))
 
 (defun cq-count-lines ($start $end)
@@ -528,7 +528,7 @@
            (point)
            (if (region-active-p)
                (mark)
-             (cq-forward-sexp)
+             (cq-forward-1exp)
              (point))))
 
 (defun cq-copy-region ()
@@ -555,9 +555,9 @@
 (defun cq-mark-sexp ()
   (interactive)
   (if (eq last-command this-command)
-      (cq-forward-sexp)
+      (cq-forward-1exp)
     (set-mark (point))
-    (cq-forward-sexp))
+    (cq-forward-1exp))
   (cq-activate-region-for-xemacs))
 
 (defun cq-mark-defun ()
