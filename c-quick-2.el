@@ -65,6 +65,10 @@
   :group 'c-quick
   :type  'boolean)
 
+(defcustom cq-whitespace nil ""
+  :group 'c-quick
+  :type  'boolean)
+
 ;;;; Internal Variables
 
 (defvar _cq-mode_is_on_ nil)
@@ -246,9 +250,11 @@
 (defun cq-set-mode ($arg)
   (if (not $arg)
       (progn
-        (and (fboundp 'global-whitespace-mode) (global-whitespace-mode 0))
+        (and cq-whitespace
+             (fboundp 'global-whitespace-mode) (global-whitespace-mode 0))
         (and (fboundp 'show-paren-mode) (show-paren-mode 0)))
-    (and (fboundp 'global-whitespace-mode) (global-whitespace-mode 1))
+    (and cq-whitespace
+         (fboundp 'global-whitespace-mode) (global-whitespace-mode 1))
     (setq show-paren-style
           (if cq-paren-only 'parenthesis 'expression))
     (setq show-paren-delay 0)
