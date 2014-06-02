@@ -65,7 +65,7 @@
   :group 'c-quick
   :type  'boolean)
 
-(defcustom cq-whitespace nil ""
+(defcustom cq-whitespace t ""
   :group 'c-quick
   :type  'boolean)
 
