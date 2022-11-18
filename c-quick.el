@@ -399,12 +399,6 @@
           (select-window cw)
           ))))
 
-;(defun c-quick-switch-to-buffer-other-window (buffer)
-;  (save-excursion
-;    (switch-to-buffer-other-window buffer)
-;    )
-;  )
-
 (defun c-quick-exchange-point-and-mark (arg)
   (interactive "P")
   (let ((active (region-active-p)))
