@@ -4,7 +4,7 @@
 ;; Copyright (C) 1993-2022  JavaCommons Technologies
 ;;
 ;; Author: JavaCommons Technologies
-;; URL:
+;; URL: https://github.com/akmiyoshi/c-quick
 ;; Keywords: lisp, clojure
 ;; Version: 2.0.1
 ;;
