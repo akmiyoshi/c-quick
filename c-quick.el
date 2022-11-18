@@ -357,7 +357,7 @@
        ((minibufferp currbuff) nil)         ;; minibuffer
        ((string= buffname "*GNU Emacs*") nil)
        ((string= buffname "*Buffer List*") nil)
-       ((string= buffname "*Messages*") nil)
+       ;((string= buffname "*Messages*") nil)
        ((string= buffname "*Backtrace*") nil)
        ((string= buffname "*Help*") nil)
        ((string= buffname "*Completions*") nil)
