@@ -66,7 +66,7 @@
 ;;;; Internal Variables
 
 (setq _c-quick-mode_is_on_ nil)
-;;(make-variable-buffer-local '_c-quick-mode_is_on_)
+(make-variable-buffer-local '_c-quick-mode_is_on_)
 
 ;;;; Functions
 
@@ -98,6 +98,7 @@
   (if c-quick-ding-dings (ding)))
 
 (defun c-quick-redisplay ()
+  ;(c-quick-set-mode _c-quick-mode_is_on_)
   (c-quick-recenter)
   (c-quick-show-info)
   (force-mode-line-update)
@@ -406,6 +407,39 @@
     (exchange-point-and-mark arg)
     (if (not active)
         (deactivate-mark))))
+
+;(add-hook 'window-selection-change-functions
+;          (lambda ()
+;            (c-quick-set-mode _c-quick-mode_is_on_)
+;            ))
+
+(setq c-quick-switch-buffer-functions nil)
+
+(setq c-quick-switch-buffer-functions--last-buffer nil)
+
+(defun c-quick-switch-buffer-functions-run ()
+  "Run `c-quick-switch-buffer-functions' if needed.
+
+This function checks the result of `current-buffer', and run
+`c-quick-switch-buffer-functions' when it has been changed from
+the last buffer.
+
+This function should be hooked to `post-command-hook'."
+  (unless (eq (current-buffer)
+              switch-buffer-functions--last-buffer)
+    (let ((current (current-buffer))
+          (previous switch-buffer-functions--last-buffer))
+      (setq switch-buffer-functions--last-buffer
+            current)
+      (run-hook-with-args 'switch-buffer-functions
+                          previous
+                          current))))
+
+(add-hook 'post-command-hook
+          'c-quick-switch-buffer-functions-run)
+
+(add-hook 'switch-buffer-functions
+          (lambda (prev cur) (c-quick-set-mode _c-quick-mode_is_on_)))
 
 (provide 'c-quick)
 ;;; c-quick.el ends here
