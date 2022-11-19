@@ -408,38 +408,9 @@
     (if (not active)
         (deactivate-mark))))
 
-;(add-hook 'window-selection-change-functions
-;          (lambda ()
-;            (c-quick-set-mode _c-quick-mode_is_on_)
-;            ))
-
-(setq c-quick-switch-buffer-functions nil)
-
-(setq c-quick-switch-buffer-functions--last-buffer nil)
-
-(defun c-quick-switch-buffer-functions-run ()
-  "Run `c-quick-switch-buffer-functions' if needed.
-
-This function checks the result of `current-buffer', and run
-`c-quick-switch-buffer-functions' when it has been changed from
-the last buffer.
-
-This function should be hooked to `post-command-hook'."
-  (unless (eq (current-buffer)
-              switch-buffer-functions--last-buffer)
-    (let ((current (current-buffer))
-          (previous switch-buffer-functions--last-buffer))
-      (setq switch-buffer-functions--last-buffer
-            current)
-      (run-hook-with-args 'switch-buffer-functions
-                          previous
-                          current))))
-
 (add-hook 'post-command-hook
-          'c-quick-switch-buffer-functions-run)
-
-(add-hook 'c-quick-switch-buffer-functions
-          (lambda (prev cur) (c-quick-set-mode _c-quick-mode_is_on_)))
+          (lambda ()
+            (c-quick-set-mode _c-quick-mode_is_on_)))
 
 (provide 'c-quick)
 ;;; c-quick.el ends here
