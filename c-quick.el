@@ -48,7 +48,8 @@
 (global-set-key (kbd "<f12>")      'c-quick-jump-to-function)
 (global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
 
-(global-set-key (kbd "<C-f4>")      'c-quick-kill-current-buffer)
+(global-set-key (kbd "<C-f4>")     'c-quick-kill-current-buffer)
+(global-set-key (kbd "<M-f4>")     'kill-emacs)
 
 ;;;; Customization
 
