@@ -370,6 +370,7 @@
        ((string= buffname "*Help*") nil)
        ((string= buffname "*Completions*") nil)
        ((string= buffname "*Compile-Log*") nil)
+       ((string= buffname "*Quail Completions*") nil)
        ;((string= buffname "*xprint*") nil) ;; *xprint*
        ;((string-match "^[*]" buffname) nil) ;; *scratch*, *Help* etc
        ((string-match "^[ ]" buffname) nil) ;; work buffer
