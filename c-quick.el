@@ -80,15 +80,15 @@
    (t (message "c-quick-mode is OFF"))))
 
 (defun c-quick-set-mode (arg)
+  (setq show-paren-style
+        (if c-quick-paren-only 'parenthesis 'expression))
   (if (not arg)
       (progn
-        ;(global-whitespace-mode 0)
+                                        ;(global-whitespace-mode 0)
         (show-paren-mode 0))
-    ;(global-whitespace-mode 1)
-    (setq show-paren-style
-          (if c-quick-paren-only 'parenthesis 'expression))
-    (setq show-paren-delay 0)
-    (show-paren-mode 1)))
+                                        ;(global-whitespace-mode 1)
+      (setq show-paren-delay 0)
+      (show-paren-mode 1)))
 
 (defun c-quick-mode ()
   (and
