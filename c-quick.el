@@ -65,7 +65,8 @@
 
 ;;;; Internal Variables
 
-(defvar _c-quick-mode_is_on_ nil)
+(setq _c-quick-mode_is_on_ nil)
+;;(make-variable-buffer-local '_c-quick-mode_is_on_)
 
 ;;;; Functions
 
