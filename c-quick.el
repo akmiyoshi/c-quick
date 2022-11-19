@@ -48,6 +48,8 @@
 (global-set-key (kbd "<f12>")      'c-quick-jump-to-function)
 (global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
 
+(global-set-key (kbd "<C-f4>")      'c-quick-kill-current-buffer)
+
 ;;;; Customization
 
 (defgroup c-quick nil
@@ -375,8 +377,6 @@
       (switch-to-buffer found)
       (bury-buffer found))))
 
-;;;; Testing
-
 (defun c-quick-jump-to-function ()
   (interactive)
   (let* ((func-name (find-tag-default))
@@ -409,6 +409,10 @@
     (exchange-point-and-mark arg)
     (if (not active)
         (deactivate-mark))))
+
+(defun c-quick-kill-current-buffer ()
+  (interactive)
+  (kill-buffer (current-buffer)))
 
 (add-hook 'post-command-hook
           (lambda ()
