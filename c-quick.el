@@ -438,7 +438,7 @@ This function should be hooked to `post-command-hook'."
 (add-hook 'post-command-hook
           'c-quick-switch-buffer-functions-run)
 
-(add-hook 'switch-buffer-functions
+(add-hook 'c-quick-switch-buffer-functions
           (lambda (prev cur) (c-quick-set-mode _c-quick-mode_is_on_)))
 
 (provide 'c-quick)
