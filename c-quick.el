@@ -67,6 +67,7 @@
 
 (setq _c-quick-mode_is_on_ nil)
 (make-variable-buffer-local '_c-quick-mode_is_on_)
+(c-quick-set-mode (not _c-quick-mode_is_on_))
 (c-quick-set-mode _c-quick-mode_is_on_)
 
 ;;;; Functions
