@@ -48,6 +48,10 @@
 (global-set-key (kbd "<f12>")      'c-quick-jump-to-function)
 (global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
 
+;;;;
+
+(show-paren-mode 0)
+
 ;;;; Customization
 
 (defgroup c-quick nil
