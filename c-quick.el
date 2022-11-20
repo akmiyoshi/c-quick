@@ -68,7 +68,7 @@
 (global-set-key (kbd "<f10>")
                 (lambda ()
                   (interactive)
-                  (xdump buffer-file-name)
+                  ;(xdump buffer-file-name)
                   (if (null buffer-file-name) (ding)
                       (let* ((dir (file-name-directory buffer-file-name))
                              (fname (file-name-nondirectory buffer-file-name))
