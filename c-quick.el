@@ -351,6 +351,18 @@
       (end-of-defun)
       (setq end (point)))))
 
+(defun c-quick-buffer-visible (buffer)
+  (let ((wins (window-list))
+        (found nil))
+    (dolist (win wins)
+      (when (eq buffer (window-buffer win))
+        (setq found t)
+        )
+      )
+    found
+    )
+  )
+
 (defun c-quick-rotate-buffer ()
   (interactive)
   (let ((bufflist (buffer-list))
@@ -363,6 +375,7 @@
       (cond
        ((eq bufforig currbuff) nil)
        ((minibufferp currbuff) nil)         ;; minibuffer
+       ((c-quick-buffer-visible currbuff) nil)
        ((string= buffname "*GNU Emacs*") nil)
        ((string= buffname "*Buffer List*") nil)
        ((string= buffname "*Messages*") nil)
