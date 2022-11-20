@@ -28,7 +28,6 @@
 (global-set-key (kbd "<right>")    'c-quick-right-key)
 (global-set-key (kbd "<left>")     'c-quick-left-key)
 (global-set-key (kbd "C-z")        'undo)
-(global-set-key (kbd "<f9>")        'c-quick-toggle-mode)
 (global-set-key (kbd "M-w")        'c-quick-copy-region)
 (global-set-key (kbd "C-w")        'c-quick-kill-region)
 (global-set-key (kbd "C-M-\\")     'c-quick-indent-region)
@@ -46,7 +45,12 @@
 (global-set-key (kbd "<C-up>")     'c-quick-up-quick)
 (global-set-key (kbd "<C-down>")   'c-quick-down-quick)
 
+(global-set-key (kbd "<f5>")       (lambda () (interactive) (select-window (split-window-below))))
+(global-set-key (kbd "<f6>")       'other-window)
+
+(global-set-key (kbd "<f9>")        'c-quick-toggle-mode)
 (global-set-key (kbd "<f12>")      'c-quick-jump-to-function)
+
 (global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
 
 (global-set-key (kbd "<C-f4>")     'c-quick-kill-current-buffer)
@@ -428,7 +432,12 @@
 
 (defun c-quick-kill-current-buffer ()
   (interactive)
-  (kill-buffer (current-buffer)))
+  (kill-buffer (current-buffer))
+  (condition-case nil
+      (delete-window)
+    (error nil)
+    )
+  )
 
 (add-hook 'post-command-hook
           (lambda ()
