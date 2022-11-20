@@ -73,7 +73,7 @@
                   (if (null buffer-file-name) (ding)
                       (let* ((dir (file-name-directory buffer-file-name))
                              (fname (file-name-nondirectory buffer-file-name))
-                             (cmd (format "cd \"%s\" && ./%s" dir fname)))
+                             (cmd (format "cd /d \"%s\" && busybox bash -c \"./%s\"" dir fname)))
                         (xdump dir)
                         (xdump fname)
                         (xdump cmd)
