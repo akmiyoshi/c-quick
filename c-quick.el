@@ -5,8 +5,6 @@
 ;;
 ;; Author: JavaCommons Technologies
 ;; URL: https://github.com/akmiyoshi/c-quick
-;; Keywords: lisp, clojure
-;; Version: 2.0.1
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -45,68 +43,72 @@
 (global-set-key (kbd "<C-up>")     'c-quick-up-quick)
 (global-set-key (kbd "<C-down>")   'c-quick-down-quick)
 
-(defun c-quick-clear-buffer (name)
-  (interactive)
-  (let ((cb (current-buffer))
-        (cw (selected-window))
-        (found nil))
-    (let ((wins (window-list)))
-      (dolist (win wins)
-        (select-window win)
-        (when (equal (buffer-name) name)
-          (delete-window win)
-          (setq found t)
-          )
-        )
-      )
-    (when found
-      (kill-buffer name)
-      nil)
-    )
-  )
+(global-set-key (kbd "<C-f5>")
+                (lambda ()
+                  (interactive)
+                  (if (null (buffer-file-name)) (error "Not a file buffer.")
+                      (let ((name (format "%s/%s:%d"
+                                          ;(file-name-nondirectory (substring (file-name-directory (buffer-file-name)) 0 -1))
+                                          (substring (md5 (file-name-directory (buffer-file-name))) 0 7)
+                                          (file-name-nondirectory (buffer-file-name)) (point))))
+                        (bookmark-set name)
+                        (message "Bookmark %s created." name)
+                        ))))
+(global-set-key (kbd "<C-f6>")
+                (lambda ()
+                  (interactive)
+                  (list-bookmarks)
+                  (switch-to-buffer "*Bookmark List*")
+                  ))
+(global-set-key (kbd "<C-f7>")
+                (lambda () (interactive)
+                  (let (win)
+                    (save-window-excursion
+                      (setq win (list-buffers t))))
+                  (switch-to-buffer "*Buffer List*")
+                  ))
+(global-set-key (kbd "<C-f8>")
+                (lambda () (interactive)
+                  (let (win)
+                    (save-window-excursion
+                      (setq win (list-buffers nil))))
+                  (switch-to-buffer "*Buffer List*")
+                  ))
 
+(global-set-key (kbd "<C-f10>")
+                (lambda ()
+                  (interactive)
+                  (condition-case nil
+                      (kill-buffer "*eshell*")
+                    (error nil))
+                  (delete-other-windows)
+                  (save-window-excursion
+                    (eshell)
+                    )
+                  (switch-to-buffer-other-window "*eshell*")
+                  ))
+(global-set-key (kbd "<f9>")       'c-quick-toggle-mode)
 (global-set-key (kbd "<f10>")
                 (lambda ()
                   (interactive)
-                                        ;(xdump buffer-file-name)
                   (if (null buffer-file-name) (ding)
                       (let* (
-                             ;(shell-file-name (format "%s/.software/_msys2/current/usr/bin/bash.exe" (getenv "USERPROFILE")))
+                             (win (selected-window))
                              (dir (file-name-directory buffer-file-name))
                              (fname (file-name-nondirectory buffer-file-name))
-                                        ;(cmd (format "cd /d \"%s\" && busybox64 bash -c \"./%s\"" dir fname))
                              (cmd (format "cd \"%s\" && time \"./%s\"" dir fname))
-                                        ;(cmd (format "\"./%s\"" fname))
                              )
-                                        ;(xdump dir)
-                                        ;(xdump fname)
-                        (xdump cmd)
-                                        ;(c-quick-clear-buffer "*compilation*")
-                                        ;(cd dir)
-                                        ;(compile cmd)
-                                        ;(c-quick-clear-buffer "*result*")
-                                        ;(switch-to-buffer-other-window "*result*")
-                                        ;(eshell-command cmd t)
+                        (delete-other-windows)
                         (switch-to-buffer-other-window "*scratch*")
                         (lisp-interaction-mode)
                         (eshell)
                         (goto-char (point-max))
                         (insert cmd)
                         (eshell-send-input)
+                        (select-window win)
                         )
                       )
                   ))
-(global-set-key (kbd "<C-f5>")     (lambda () (interactive) (select-window (split-window-below))))
-(global-set-key (kbd "<C-f6>")     'other-window)
-(global-set-key (kbd "<C-f7>")     'delete-other-windows)
-
-(global-set-key (kbd "<f8>")
-                (lambda ()
-                  (interactive)
-                  (switch-to-buffer-other-window "*scratch*")
-                  (lisp-interaction-mode)
-                  (eshell)))
-(global-set-key (kbd "<f9>")       'c-quick-toggle-mode)
 (global-set-key (kbd "<f12>")      'c-quick-jump-to-function)
 
 (global-set-key (kbd "C-x C-x")    'c-quick-exchange-point-and-mark)
@@ -131,19 +133,17 @@
 
 ;;;; Internal Variables
 
-(setq _c-quick-mode_is_on_ nil)
-(make-variable-buffer-local '_c-quick-mode_is_on_)
-;(c-quick-set-mode (not _c-quick-mode_is_on_))
-;(c-quick-set-mode _c-quick-mode_is_on_)
+(setq *c-quick-mode-is-on* nil)
+(make-variable-buffer-local '*c-quick-mode-is-on*)
 
 ;;;; Functions
 
 (defun c-quick-toggle-mode ()
   (interactive)
-  (setq _c-quick-mode_is_on_ (not _c-quick-mode_is_on_))
-  (c-quick-set-mode _c-quick-mode_is_on_)
+  (setq *c-quick-mode-is-on* (not *c-quick-mode-is-on*))
+  (c-quick-set-mode *c-quick-mode-is-on*)
   (cond
-   (_c-quick-mode_is_on_ (message "c-quick-mode is ON"))
+   (*c-quick-mode-is-on* (message "c-quick-mode is ON"))
    (t (message "c-quick-mode is OFF"))))
 
 (defun c-quick-set-mode (arg)
@@ -160,13 +160,12 @@
 (defun c-quick-mode ()
   (and
    (not (window-minibuffer-p (selected-window)))
-   _c-quick-mode_is_on_))
+   *c-quick-mode-is-on*))
 
 (defun c-quick-ding ()
   (if c-quick-ding-dings (ding)))
 
 (defun c-quick-redisplay ()
-  ;(c-quick-set-mode _c-quick-mode_is_on_)
   (c-quick-recenter)
   (c-quick-show-info)
   (force-mode-line-update)
@@ -258,6 +257,8 @@
    ((eobp) (c-quick-ding))
    ((c-quick-within-string (point)) (c-quick-forward-within-string))
    ((looking-at "\\s)") (c-quick-ding))
+   ((looking-at "\\s.")
+    (forward-char))
    ((looking-at "\\s-*\\s<")
     (let ((opoint (point)))
       (forward-line)
@@ -281,6 +282,8 @@
      ((bobp) (c-quick-ding))
      ((c-quick-within-string (point)) (c-quick-backward-within-string))
      ((looking-back "\\s(") (c-quick-ding))
+     ((looking-back "\\s.")
+      (backward-char))
      ((and (looking-back "\\s>")
            (save-excursion (backward-char)
                            (setq comment-begin (c-quick-find-comment (point)))))
@@ -499,7 +502,24 @@
 
 (add-hook 'post-command-hook
           (lambda ()
-            (c-quick-set-mode _c-quick-mode_is_on_)))
+            (c-quick-set-mode *c-quick-mode-is-on*)))
+
+(defadvice eshell-script-interpreter (around esi activate) ;; https://qiita.com/tm_tn/items/7003faed5d3879733cda
+  (setq ad-return-value
+        (let ((file (ad-get-arg 0))
+              (maxlen eshell-command-interpreter-max-length))
+          (if (and (file-readable-p file)
+                   (file-regular-p file))
+              (with-temp-buffer
+                (insert-file-contents-literally file nil 0 maxlen)
+                (when (re-search-forward "^#![ \t]*\\(.+\\)$" nil t)
+                  (let ((lst (split-string (match-string 1))))
+                    (when (string= "/usr/bin/env" (car lst))
+                      (setq lst (cdr lst))
+                      )
+                    (append lst (list file))
+                    )
+                  ))))))
 
 (provide 'c-quick)
 ;;; c-quick.el ends here
