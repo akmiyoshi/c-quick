@@ -5,6 +5,7 @@
 ;;
 ;; Author: JavaCommons Technologies
 ;; URL: https://github.com/akmiyoshi/c-quick
+;; Version: v2022.1121.0535.21
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
