@@ -5,7 +5,7 @@
 ;;
 ;; Author: JavaCommons Technologies
 ;; URL: https://github.com/akmiyoshi/c-quick
-;; Version: v2022.1121.0535.21
+;; Version: v2022.1121.0543.05
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -150,11 +150,7 @@
 (defun c-quick-set-mode (arg)
   (setq show-paren-style
         (if c-quick-paren-only 'parenthesis 'expression))
-  (if (not arg)
-      (progn
-                                        ;(global-whitespace-mode 0)
-        (show-paren-mode 0))
-                                        ;(global-whitespace-mode 1)
+  (if (not arg) (show-paren-mode 0)
       (setq show-paren-delay 0)
       (show-paren-mode 1)))
 
@@ -425,9 +421,7 @@
         (setq found t)
         )
       )
-    found
-    )
-  )
+    found))
 
 (defun c-quick-rotate-buffer ()
   (interactive)
@@ -482,8 +476,7 @@
               ) nil)
            (t (error "%s not found" interned))
            )
-          (select-window cw)
-          ))))
+          (select-window cw)))))
 
 (defun c-quick-exchange-point-and-mark (arg)
   (interactive "P")
@@ -497,9 +490,7 @@
   (kill-buffer (current-buffer))
   (condition-case nil
       (delete-window)
-    (error nil)
-    )
-  )
+    (error nil)))
 
 (add-hook 'post-command-hook
           (lambda ()
@@ -518,9 +509,6 @@
                     (when (string= "/usr/bin/env" (car lst))
                       (setq lst (cdr lst))
                       )
-                    (append lst (list file))
-                    )
-                  ))))))
+                    (append lst (list file)))))))))
 
 (provide 'c-quick)
-;;; c-quick.el ends here
