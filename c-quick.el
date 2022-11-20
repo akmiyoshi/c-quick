@@ -65,6 +65,7 @@
     )
   )
 
+(setq shell-file-name (format "%s/.software/_busybox/current/bash.exe" (getenv "USERPROFILE")))
 (global-set-key (kbd "<f10>")
                 (lambda ()
                   (interactive)
@@ -72,7 +73,7 @@
                   (if (null buffer-file-name) (ding)
                       (let* ((dir (file-name-directory buffer-file-name))
                              (fname (file-name-nondirectory buffer-file-name))
-                             (cmd (format "cd /d \"%s\" && busybox bash -c \"./%s\"" dir fname)))
+                             (cmd (format "cd /d \"%s\" && busybox64 bash -c \"./%s\"" dir fname)))
                         ;(xdump dir)
                         ;(xdump fname)
                         ;(xdump cmd)
